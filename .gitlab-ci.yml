@@ -1,0 +1,39 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  NODE_VERSION: '20.19.0'
+
+# Build stage - runs on every push
+build:
+  stage: build
+  image: node:${NODE_VERSION}
+  cache:
+    paths:
+      - node_modules/
+  script:
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 day
+  only:
+    - master
+
+# Deploy to Heroku Production
+deploy-production:
+  stage: deploy
+  image: node:${NODE_VERSION}
+  before_script:
+    - apt-get update && apt-get install -y git curl bash
+    - curl https://cli-assets.heroku.com/install.sh | bash
+  script:
+    - heroku git:remote -a leo-web-frontend
+    - git push https://heroku:$HEROKU_API_KEY@git.heroku.com/leo-web-frontend.git HEAD:master
+  environment:
+    name: production
+    url: https://leo-web-frontend-84a7518ad9a1.herokuapp.com
+  only:
+    - master
