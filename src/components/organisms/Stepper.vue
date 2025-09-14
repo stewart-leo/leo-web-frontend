@@ -31,38 +31,42 @@
     </div>
 
     <div class="step-panels">
-      <div
-        v-for="(step, index) in steps"
-        :key="step.value"
-        v-show="activeStepIndex === index"
-        class="step-panel"
-      >
-        <slot :name="`step-${step.value}`"></slot>
+      <div class="step-panels-wrapper">
+        <div
+          v-for="(step, index) in steps"
+          :key="step.value"
+          v-show="activeStepIndex === index"
+          class="step-panel"
+        >
+          <div class="step-panel-content">
+            <slot :name="`step-${step.value}`"></slot>
+          </div>
 
-        <div class="step-navigation">
-          <PvButton
-            v-if="index > 0"
-            label="Back"
-            severity="secondary"
-            icon="pi pi-arrow-left"
-            @click="setActiveStep(steps[index - 1].value)"
-          />
+          <div class="step-navigation">
+            <PvButton
+              v-if="index > 0"
+              label="Back"
+              severity="secondary"
+              icon="pi pi-arrow-left"
+              @click="setActiveStep(steps[index - 1].value)"
+            />
 
-          <PvButton
-            v-if="index < steps.length - 1"
-            label="Next"
-            icon="pi pi-arrow-right"
-            iconPos="right"
-            @click="setActiveStep(steps[index + 1].value)"
-          />
+            <PvButton
+              v-if="index < steps.length - 1"
+              label="Next"
+              icon="pi pi-arrow-right"
+              iconPos="right"
+              @click="setActiveStep(steps[index + 1].value)"
+            />
 
-          <PvButton
-            v-if="index === steps.length - 1"
-            label="Submit"
-            icon="pi pi-check"
-            severity="success"
-            @click="$emit('submit')"
-          />
+            <PvButton
+              v-if="index === steps.length - 1"
+              label="Submit"
+              icon="pi pi-check"
+              severity="success"
+              @click="$emit('submit')"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -120,13 +124,16 @@ const getStepIcon = (index) => {
 <style scoped>
 .stepper-container {
   width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Progress Section */
 .step-indicators {
   position: relative;
   margin-bottom: 2rem;
-  padding: 0 2rem;
+  flex-shrink: 0;
 }
 
 .progress-line {
@@ -232,11 +239,55 @@ const getStepIcon = (index) => {
   border: 1px solid var(--surface-border, #e5e7eb);
   border-radius: 8px;
   padding: 2rem;
-  min-height: 400px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 600px; /* Set a minimum height */
+  height: 600px; /* Or set a fixed height */
+  overflow: hidden;
+}
+
+.step-panels-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
 }
 
 .step-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
   animation: fadeIn 0.3s ease;
+}
+
+.step-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.5rem; /* Add some padding for scrollbar */
+}
+
+/* Custom scrollbar for better appearance */
+.step-panel-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.step-panel-content::-webkit-scrollbar-track {
+  background: var(--surface-ground, #f1f1f1);
+  border-radius: 4px;
+}
+
+.step-panel-content::-webkit-scrollbar-thumb {
+  background: var(--surface-border, #888);
+  border-radius: 4px;
+}
+
+.step-panel-content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-color-secondary, #555);
 }
 
 @keyframes fadeIn {
@@ -254,9 +305,10 @@ const getStepIcon = (index) => {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
-  margin-top: 2rem;
+  margin-top: auto;
   padding-top: 2rem;
   border-top: 1px solid var(--surface-border, #e5e7eb);
+  flex-shrink: 0;
 }
 
 .step-navigation:only-child {
@@ -285,6 +337,16 @@ const getStepIcon = (index) => {
 
   .step-panels {
     padding: 1rem;
+    min-height: 500px;
+    height: 500px;
+  }
+}
+
+/* For larger screens, you might want a taller container */
+@media (min-width: 1024px) {
+  .step-panels {
+    min-height: 650px;
+    height: 650px;
   }
 }
 </style>

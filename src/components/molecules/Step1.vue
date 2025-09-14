@@ -27,7 +27,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import countries from '@/assets/countries.json'
+import countries from '@/assets/json/countries.json'
 
 const name = ref()
 const companyName = ref()
