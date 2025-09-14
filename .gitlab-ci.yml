@@ -19,8 +19,6 @@ build:
     paths:
       - dist/
     expire_in: 1 day
-  only:
-    - master
 
 # Deploy to Heroku Production
 deploy-production:
@@ -35,5 +33,3 @@ deploy-production:
   environment:
     name: production
     url: https://leo-web-frontend-84a7518ad9a1.herokuapp.com
-  only:
-    - master
