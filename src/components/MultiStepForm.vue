@@ -6,10 +6,10 @@
     <template #step-2>
       <Step2 />
     </template>
-    <!-- <template #step-3>
+    <template #step-3>
       <Step3 />
     </template>
-    <template #step-4>
+    <!-- <template #step-4>
       <Step4 />
     </template>
     <template #step-5>
@@ -25,7 +25,7 @@
 import Stepper from '@/components/organisms/Stepper.vue'
 import Step1 from '@/components/molecules/Step1.vue'
 import Step2 from '@/components/molecules/Step2.vue'
-// import Step3 from '@/components/molecules/Step3.vue'
+import Step3 from '@/components/molecules/Step3.vue'
 // import Step4 from '@/components/molecules/Step4.vue'
 // import Step5 from '@/components/molecules/Step5.vue'
 // import Step6 from '@/components/molecules/Step6.vue'
