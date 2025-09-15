@@ -3,18 +3,20 @@
     <div class="form-container">
       <div v-for="(question, questionKey) in questions" :key="questionKey" class="question-section">
         <PvFieldset :legend="question.text">
-          <div
-            v-for="(option, optionIndex) in question.options"
-            :key="optionIndex"
-            class="radio-option"
-          >
-            <PvRadioButton
-              v-model="selectedAnswers[questionKey]"
-              :inputId="`${questionKey}_${optionIndex}`"
-              :name="questionKey"
-              :value="option"
-            />
-            <label :for="`${questionKey}_${optionIndex}`" class="radio-label">{{ option }}</label>
+          <div class="radio-options">
+            <div
+              v-for="(option, optionIndex) in question.options"
+              :key="optionIndex"
+              class="radio-option"
+            >
+              <PvRadioButton
+                v-model="selectedAnswers[questionKey]"
+                :inputId="`${questionKey}_${optionIndex}`"
+                :name="questionKey"
+                :value="option"
+              />
+              <label :for="`${questionKey}_${optionIndex}`" class="radio-label">{{ option }}</label>
+            </div>
           </div>
         </PvFieldset>
       </div>
@@ -52,10 +54,17 @@ const selectedAnswers = ref({
   margin-top: -1rem;
 }
 
+.radio-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
 .radio-option {
   display: flex;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.5rem;
 }
 
 .radio-label {

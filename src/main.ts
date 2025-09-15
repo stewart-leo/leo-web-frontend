@@ -16,6 +16,7 @@ import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import CheckboxGroup from 'primevue/checkboxgroup'
 import Fieldset from 'primevue/fieldset'
+import FileUpload from 'primevue/fileupload'
 import FloatLabel from 'primevue/floatlabel'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
@@ -51,6 +52,7 @@ app.component('PvButton', Button)
 app.component('PvCheckbox', Checkbox)
 app.component('PvCheckboxGroup', CheckboxGroup)
 app.component('PvFieldset', Fieldset)
+app.component('PvFileUpload', FileUpload)
 app.component('PvFloatLabel', FloatLabel)
 app.component('PvForm', Form)
 app.component('PvInputText', InputText)
