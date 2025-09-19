@@ -50,6 +50,7 @@ const searchCountries = (event) => {
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  padding: 1rem;
 }
 :deep(.p-inputtext),
 :deep(.p-autocomplete) {

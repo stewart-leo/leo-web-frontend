@@ -1,0 +1,42 @@
+{
+  "question1": {
+    "text": "What is the expected ROI of this innovation, and over what timeframe?",
+    "options": [
+      "High ROI within 8 months",
+      "Moderate ROI within 12 months",
+      "ROI expected in 12-24 months",
+      "ROI difficult to quantify but strategic value evident",
+      "No clear ROI or financial benefit"
+    ]
+  },
+  "question2": {
+    "text": "How easily can this innovation be integrated into existing CBRE operations or client environments?",
+    "options": [
+      "Fully plug-and-play; no changes required",
+      "Minor adjustments needed; low effort integration",
+      "Moderate changes required; some process or system updates",
+      "Significant changes required; high effort integration",
+      "Not currently feasible without major transformation"
+    ]
+  },
+  "question3": {
+    "text": "How does this innovation differentiate CBRE from competitors?",
+    "options": [
+      "Unique and proprietary; no known competitors",
+      "Emerging innovation; few competitors currently using",
+      "Common in market but with a unique CBRE application",
+      "Similar to existing solutions; limited differentiation",
+      "No clear market advantage"
+    ]
+  },
+  "question4": {
+    "text": "How does this innovation create measurable value for CBRE and its clients?",
+    "options": [
+      "Strong value for both CBRE and clients (e.g. cost, ESG, satisfaction)",
+      "Primarily benefits CBRE operations",
+      "Primarily benefits client experience",
+      "Limited measurable value but aligns with strategic goals",
+      "No clear value identified"
+    ]
+  }
+}
