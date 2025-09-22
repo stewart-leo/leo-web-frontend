@@ -2,15 +2,15 @@
   <PvPanel>
     <div class="form-container">
       <div class="upload-section">
-        <PvFieldset legend="File Upload for Supporting Materials">
+        <PvFieldset legend="[Optional] File Upload for Supporting Materials">
           <p class="upload-description">
-            <strong>Optional Video (90 Seconds)</strong><br />
+            <strong>Video (90 Seconds)</strong><br />
             As an added bonus to your entry, please submit a video that does not exceed 90 seconds
             in length. Ideally, this video should illustrate the innovation in action, or otherwise
             enhance and support the submission via visualization.
           </p>
           <p class="upload-description">
-            <strong>Optional (16:9 PowerPoint Decks)</strong><br />
+            <strong>16:9 PowerPoint Decks</strong><br />
             You can also upload additional marketing decks or supporting materials for your
             innovation below. All slides should have a widescreen, 16:9 Microsoft PowerPoint
             dimension.
@@ -19,15 +19,15 @@
             name="supportingMaterials[]"
             :multiple="true"
             accept="video/*,.ppt,.pptx,.pdf,.doc,.docx"
-            :maxFileSize="50000000"
+            :maxFileSize="31457000"
             chooseLabel="Choose Files"
             class="custom-file-upload"
           >
             <template #empty>
               <div class="upload-drop-zone">
-                <i class="pi pi-file text-6xl text-primary mb-4"></i>
+                <i class="pi pi-file-arrow-up" style="font-size: 2.5rem"></i>
                 <p class="text-xl font-semibold text-gray-700 mb-2">Drop your files here</p>
-                <p class="text-sm text-gray-500">or click to browse</p>
+                <p class="text-sm text-gray-500">or click Choose Files</p>
               </div>
             </template>
           </PvFileUpload>
@@ -101,10 +101,6 @@ const referenceOptions = [
   gap: 2rem;
   padding: 1rem;
 }
-.upload-section,
-.form-section {
-  margin-bottom: 1.5rem;
-}
 .upload-description {
   color: #6b7280;
   font-size: 0.9rem;
@@ -168,7 +164,7 @@ const referenceOptions = [
 }
 :deep(.p-fieldset) {
   border-color: #cbd5e1;
-  margin-bottom: 1rem;
+  margin-top: -1rem;
 }
 :deep(.p-fieldset-legend-label) {
   font-weight: 600;

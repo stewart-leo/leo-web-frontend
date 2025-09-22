@@ -22,14 +22,33 @@
         </div>
       </PvFieldset>
 
-      <PvFieldset legend="What is the global or regional reach of this innovation?">
+      <PvFieldset legend="Is the proposed solution available in multiple countries?">
+        <div
+          v-for="option of availabilityOptions"
+          :key="option.value"
+          class="flex align-items-center"
+        >
+          <PvRadioButton
+            v-model="selectedAvailability"
+            :inputId="option.value"
+            name="availability"
+            :value="option.value"
+          />
+          <label :for="option.value" class="ml-2">{{ option.label }}</label>
+        </div>
+      </PvFieldset>
+
+      <PvFieldset
+        v-if="selectedAvailability === 'select_regions'"
+        legend="What is the regional application of this innovation?"
+      >
         <div v-for="region of regions" :key="region" class="flex align-items-center">
           <PvCheckbox v-model="selectedRegions" :inputId="region" name="region" :value="region" />
           <label :for="region" class="ml-2">{{ region }}</label>
         </div>
       </PvFieldset>
 
-      <PvFloatLabel class="w-full md:w-80">
+      <PvFloatLabel v-if="selectedAvailability === 'specific_countries'" class="w-full md:w-80">
         <PvMultiSelect
           id="country"
           v-model="selectedCountries"
@@ -40,16 +59,14 @@
           :maxSelectedLabels="3"
           class="w-full"
         />
-        <label for="country">
-          Please list specific countries your innovation is applicable. (optional)</label
-        >
+        <label for="country"> Please list specific countries your innovation is applicable </label>
       </PvFloatLabel>
     </div>
   </PvPanel>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import challenges from '@/assets/json/challenges.json'
 import regions from '@/assets/json/regions.json'
 import countries from '@/assets/json/countries.json'
@@ -58,8 +75,27 @@ const title = ref('')
 const value1 = ref('')
 const selectedChallenges = ref([])
 const selectedRegions = ref([])
-const selectedCountries = ref([]) // This should be an array to hold selected values
-const countryOptions = countries.map((country) => ({ name: country.name })) // Options for the multiselect
+const selectedCountries = ref([])
+const selectedAvailability = ref('')
+
+const availabilityOptions = [
+  { value: 'globally_available', label: 'Yes, globally available' },
+  { value: 'select_regions', label: 'Available in select regions' },
+  { value: 'specific_countries', label: 'Not currently available outside specific countries' },
+  { value: 'unknown', label: 'Availability unknown' },
+]
+
+const countryOptions = countries.map((country) => ({ name: country.name }))
+
+// Clear dependent fields when availability changes
+watch(selectedAvailability, (newValue) => {
+  if (newValue !== 'select_regions') {
+    selectedRegions.value = []
+  }
+  if (newValue !== 'specific_countries') {
+    selectedCountries.value = []
+  }
+})
 </script>
 
 <style scoped>
@@ -70,6 +106,7 @@ const countryOptions = countries.map((country) => ({ name: country.name })) // O
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  padding: 1rem;
 }
 :deep(.p-inputtext),
 :deep(.p-autocomplete) {
@@ -82,7 +119,8 @@ const countryOptions = countries.map((country) => ({ name: country.name })) // O
   margin-left: 0.3rem;
   margin-top: -1rem;
 }
-.p-checkbox {
+.p-checkbox,
+.p-radiobutton {
   width: 2rem;
   height: 1.5rem;
 }
