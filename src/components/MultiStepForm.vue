@@ -12,7 +12,7 @@
     <template #step-4>
       <Step4 />
     </template>
-    <!-- <template #step-5>
+    <template #step-5>
       <Step5 />
     </template>
     <!-- <template #step-6>
