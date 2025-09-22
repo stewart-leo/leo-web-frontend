@@ -109,14 +109,7 @@ const setActiveStep = (stepValue) => {
 }
 
 const getStepIcon = (index) => {
-  const icons = [
-    'pi pi-user',
-    'pi pi-cog',
-    'pi pi-bullseye',
-    'pi pi-file',
-    'pi pi-eye',
-    'pi pi-send',
-  ]
+  const icons = ['pi pi-user', 'pi pi-cog', 'pi pi-bullseye', 'pi pi-file', 'pi pi-eye']
   return icons[index] || null
 }
 </script>

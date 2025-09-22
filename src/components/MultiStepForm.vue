@@ -12,10 +12,10 @@
     <template #step-4>
       <Step4 />
     </template>
-    <!-- <template #step-5>
+    <template #step-5>
       <Step5 />
     </template>
-    <template #step-6>
+    <!-- <template #step-6>
       <Step6 />
     </template> -->
   </Stepper>
@@ -27,7 +27,7 @@ import Step1 from '@/components/molecules/Step1.vue'
 import Step2 from '@/components/molecules/Step2.vue'
 import Step3 from '@/components/molecules/Step3.vue'
 import Step4 from '@/components/molecules/Step4.vue'
-// import Step5 from '@/components/molecules/Step5.vue'
+import Step5 from '@/components/molecules/Step5.vue'
 // import Step6 from '@/components/molecules/Step6.vue'
 
 const steps = [
