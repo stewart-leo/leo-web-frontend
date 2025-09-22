@@ -311,7 +311,8 @@ const getStepIcon = (index) => {
   flex-shrink: 0;
 }
 
-.step-navigation:only-child {
+/* When there's only a Next button (first step), align it to the right */
+.step-navigation:has(> :only-child) {
   justify-content: flex-end;
 }
 
