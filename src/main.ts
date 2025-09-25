@@ -18,8 +18,10 @@ import CheckboxGroup from 'primevue/checkboxgroup'
 import Fieldset from 'primevue/fieldset'
 import FileUpload from 'primevue/fileupload'
 import FloatLabel from 'primevue/floatlabel'
+import IftaLabel from 'primevue/iftalabel'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
+import Message from 'primevue/message'
 import MultiSelect from 'primevue/multiselect'
 import Panel from 'primevue/panel'
 import RadioButton from 'primevue/radiobutton'
@@ -54,9 +56,11 @@ app.component('PvCheckboxGroup', CheckboxGroup)
 app.component('PvFieldset', Fieldset)
 app.component('PvFileUpload', FileUpload)
 app.component('PvFloatLabel', FloatLabel)
+app.component('PvIftaLabel', IftaLabel)
 app.component('PvForm', Form)
 app.component('PvInputText', InputText)
 app.component('PvInputNumber', InputNumber)
+app.component('PvMessage', Message)
 app.component('PvMultiSelect', MultiSelect)
 app.component('PvPanel', Panel)
 app.component('PvRadioButton', RadioButton)

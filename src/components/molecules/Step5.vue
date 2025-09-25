@@ -1,10 +1,5 @@
 <template>
   <div class="review-container">
-    <div class="review-header">
-      <h2 class="review-title">Review Your Submission</h2>
-      <p class="review-subtitle">Please review all information before submitting</p>
-    </div>
-
     <!-- Step 1: Supplier Details -->
     <PvPanel class="review-section" :toggleable="true">
       <template #header>
@@ -224,17 +219,6 @@
           <label>References/Case Studies:</label>
           <span>{{ mockData.supportingMaterials.references }}</span>
         </div>
-        <div class="review-item">
-          <label>Information Sharing Consent:</label>
-          <span :class="mockData.supportingMaterials.consent ? 'text-success' : 'text-danger'">
-            <i
-              :class="
-                mockData.supportingMaterials.consent ? 'pi pi-check-circle' : 'pi pi-times-circle'
-              "
-            ></i>
-            {{ mockData.supportingMaterials.consent ? 'Agreed' : 'Not agreed' }}
-          </span>
-        </div>
       </div>
 
       <div v-else class="edit-content">
@@ -382,23 +366,6 @@ const saveStep = (step) => {
   max-height: 100%;
   overflow-y: auto;
   padding: 0.5rem;
-}
-
-.review-header {
-  text-align: center;
-  margin-bottom: 1rem;
-}
-
-.review-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-}
-
-.review-subtitle {
-  color: #6b7280;
-  font-size: 0.95rem;
 }
 
 .review-section {
@@ -602,14 +569,9 @@ const saveStep = (step) => {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .review-title {
-    font-size: 1.25rem;
-  }
-
   .section-title {
     font-size: 1rem;
   }
-
   .review-content {
     padding: 0.75rem;
   }

@@ -39,10 +39,10 @@
             If your submission video is hosted on a service (e.g. YouTube or Vimeo) please provide
             the link here versus uploading the native file.
           </p>
-          <PvFloatLabel class="w-full">
+          <PvIftaLabel class="w-full">
             <PvInputText id="videoLink" v-model="videoLink" class="w-full" />
-            <label for="videoLink">Video URL (YouTube, Vimeo, etc.)</label>
-          </PvFloatLabel>
+            <label for="videoLink">Video URL</label>
+          </PvIftaLabel>
         </PvFieldset>
       </div>
       <div class="form-section">
@@ -60,21 +60,6 @@
           </div>
         </PvFieldset>
       </div>
-      <div class="form-section">
-        <div class="consent-section">
-          <p class="consent-text">
-            Any information shared as part of a submission, may be shared internally. Please tick
-            the below box to confirm you understand this:
-            <span class="required">*</span>
-          </p>
-          <div class="checkbox-wrapper">
-            <PvCheckbox v-model="consentAgreed" inputId="consent" binary />
-            <label for="consent" class="consent-label">
-              I understand and agree to the information sharing policy
-            </label>
-          </div>
-        </div>
-      </div>
     </div>
   </PvPanel>
 </template>
@@ -84,7 +69,6 @@ import { ref } from 'vue'
 
 const videoLink = ref('')
 const selectedReference = ref('')
-const consentAgreed = ref(false)
 
 const referenceOptions = [
   'Reference provided',
@@ -132,32 +116,6 @@ const referenceOptions = [
 .radio-label {
   margin-left: 0.5rem;
   line-height: 1.5;
-}
-.consent-section {
-  padding: 1rem;
-  background-color: #f8fafc;
-  border-radius: 0.5rem;
-  border: 1px solid #e2e8f0;
-}
-
-.consent-text {
-  color: #374151;
-  line-height: 1.6;
-  margin-bottom: 1rem;
-}
-.required {
-  color: #ef4444;
-  font-weight: bold;
-}
-.checkbox-wrapper {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-}
-.consent-label {
-  color: #374151;
-  line-height: 1.5;
-  font-size: 0.9rem;
 }
 .strong {
   font-weight: bold !important;
