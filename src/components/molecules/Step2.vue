@@ -76,7 +76,17 @@
       </PvFieldset>
 
       <PvFloatLabel v-if="selectedAvailability === 271" class="w-full md:w-80">
-        <PvInputText id="countries" v-model="specificCountries" />
+        <PvMultiSelect
+          id="countries"
+          v-model="selectedCountries"
+          :options="countryOptions"
+          display="chip"
+          optionLabel="name"
+          filter
+          :maxSelectedLabels="5"
+          :selectionLimit="5"
+          class="w-full"
+        />
         <label for="countries">Please list specific countries your innovation is applicable</label>
       </PvFloatLabel>
     </div>
@@ -86,6 +96,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { useFormStore } from '@/stores/formStore'
+import countries from '@/assets/json/countries.json'
 
 const formStore = useFormStore()
 
@@ -95,7 +106,7 @@ const description = ref('')
 const selectedChallenges = ref([])
 const selectedAvailability = ref(null)
 const selectedRegions = ref([])
-const specificCountries = ref('')
+const selectedCountries = ref([])
 
 const descriptionTooltip = `<div style="line-height: 1.6;">
   <strong>Tip:</strong> Please keep your description short and concise. You may want to consider including the following:
@@ -109,7 +120,7 @@ const descriptionTooltip = `<div style="line-height: 1.6;">
 const challenges = [
   {
     id: 'smart-fm-ai',
-    value: 265, // answer_id from API
+    value: 265,
     label: 'Smart FM & AI driven Solutions',
     tooltip: `<ul>
       <li>Increased efficiencies and operational reliability</li>
@@ -123,7 +134,7 @@ const challenges = [
   },
   {
     id: 'sustainable-solutions',
-    value: 264, // answer_id from API (was ESG)
+    value: 264,
     label: 'Sustainable Solutions',
     tooltip: `<ul>
       <li>Carbon/ energy reduction</li>
@@ -136,7 +147,7 @@ const challenges = [
   },
   {
     id: 'workplace-experience',
-    value: 267, // answer_id from API
+    value: 267,
     label: 'Workplace Experience Enhancements',
     tooltip: `<ul>
       <li>Employee wellbeing</li>
@@ -151,7 +162,7 @@ const challenges = [
   },
   {
     id: 'operational-efficiencies',
-    value: 268, // answer_id from API (was "Other")
+    value: 268,
     label: 'Operational Efficiencies',
     tooltip: `<ul>
       <li>Operational efficiencies (i.e. reducing maintenance costs/ frequency of visits)</li>
@@ -163,7 +174,7 @@ const challenges = [
   },
   {
     id: 'soft-services',
-    value: 266, // answer_id from API (was "Strategic Categories")
+    value: 266,
     label: 'Soft Services Innovation',
     tooltip: `<ul>
       <li>Robotics and automation</li>
@@ -190,6 +201,9 @@ const regionOptions = [
   { value: 277, label: 'Ireland' },
 ]
 
+// Country options for MultiSelect
+const countryOptions = countries.map((country) => ({ name: country.name }))
+
 // Load saved data from store on mount
 onMounted(() => {
   title.value = formStore.formData.step2[156] || ''
@@ -197,7 +211,7 @@ onMounted(() => {
   selectedChallenges.value = formStore.formData.step2[158] || []
   selectedAvailability.value = formStore.formData.step2[159] || null
   selectedRegions.value = formStore.formData.step2[160] || []
-  specificCountries.value = formStore.formData.step2[161] || ''
+  selectedCountries.value = formStore.formData.step2[161] || []
 })
 
 // Watch and save to store
@@ -208,7 +222,7 @@ watch(
     selectedChallenges,
     selectedAvailability,
     selectedRegions,
-    specificCountries,
+    selectedCountries,
   ],
   () => {
     formStore.updateStep2(156, title.value) // Innovation title
@@ -216,7 +230,7 @@ watch(
     formStore.updateStep2(158, selectedChallenges.value) // Client challenge (checkbox - array)
     formStore.updateStep2(159, selectedAvailability.value) // Multiple countries (radio - single value)
     formStore.updateStep2(160, selectedRegions.value) // Regional application (checkbox - array)
-    formStore.updateStep2(161, specificCountries.value) // Specific countries (textbox)
+    formStore.updateStep2(161, selectedCountries.value) // Specific countries (multiselect - array)
   },
   { deep: true },
 )
@@ -228,8 +242,8 @@ watch(selectedAvailability, (newValue) => {
     formStore.updateStep2(160, [])
   }
   if (newValue !== 271) {
-    specificCountries.value = ''
-    formStore.updateStep2(161, '')
+    selectedCountries.value = []
+    formStore.updateStep2(161, [])
   }
 })
 </script>
@@ -256,6 +270,9 @@ watch(selectedAvailability, (newValue) => {
 .p-fieldset {
   border-color: #cbd5e1;
   margin-top: -1rem;
+}
+.p-multiselect {
+  width: 100%;
 }
 :deep(.p-fieldset-legend-label) {
   font-weight: unset;
