@@ -112,15 +112,11 @@ export const useFormStore = defineStore('form', () => {
         formDataObj.append('files[]', file)
       })
 
-      const response = await apiClient.post(
-        '/supplier-to-expert-mapper-handle-file-uploads',
-        formDataObj,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
+      const response = await apiClient.post('/supplier-to-expert-mapper-files', formDataObj, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
         },
-      )
+      })
       return response.data
     } catch (error: any) {
       console.error('Error uploading files:', error)
@@ -152,6 +148,16 @@ export const useFormStore = defineStore('form', () => {
     return allQuestions.value.filter((q) => q.question_type_id === typeId)
   }
 
+  const getPresignedUrl = async (fileData: { 'file-name': string; 'file-type': string }) => {
+    try {
+      const response = await apiClient.post('/supplier-to-expert-mapper-files', fileData)
+      return response.data
+    } catch (error: any) {
+      console.error('Error getting presigned URL:', error)
+      throw error
+    }
+  }
+
   return {
     // State
     allQuestions,
@@ -177,5 +183,6 @@ export const useFormStore = defineStore('form', () => {
     // Getters
     getQuestionById,
     getQuestionsByType,
+    getPresignedUrl,
   }
 })
