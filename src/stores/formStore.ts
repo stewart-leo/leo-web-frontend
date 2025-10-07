@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import apiClient from '@/api/api'
 
 export interface QuestionAnswerOption {
@@ -20,27 +20,14 @@ export interface FormData {
     companyName: string
     selectedCountry: { id: number; name: string } | null
   }
-  step2: {
-    title: string
-    description: string
-    selectedChallenges: string[]
-    selectedAvailability: string
-    selectedRegions: string[]
-    selectedCountries: { name: string }[]
-  }
-  step3: {
-    answers: Record<string, string>
-  }
-  step4: {
-    uploadedFiles: File[]
-    videoLink: string
-    selectedReference: string
-  }
+  step2: Record<number, any> // question_id -> answer
+  step3: Record<number, any> // question_id -> answer
+  step4: Record<number, any> // question_id -> answer
 }
 
 export const useFormStore = defineStore('form', () => {
-  // Questions from backend
-  const questions = ref<Question[]>([])
+  // All questions from backend
+  const allQuestions = ref<Question[]>([])
   const questionsLoading = ref(false)
   const questionsError = ref<string | null>(null)
 
@@ -51,22 +38,22 @@ export const useFormStore = defineStore('form', () => {
       companyName: '',
       selectedCountry: null,
     },
-    step2: {
-      title: '',
-      description: '',
-      selectedChallenges: [],
-      selectedAvailability: '',
-      selectedRegions: [],
-      selectedCountries: [],
-    },
-    step3: {
-      answers: {},
-    },
-    step4: {
-      uploadedFiles: [],
-      videoLink: '',
-      selectedReference: '',
-    },
+    step2: {}, // Innovation Details - questions 156-161
+    step3: {}, // Innovation Relevance - questions 162-165
+    step4: {}, // Supporting Materials - questions 166-167
+  })
+
+  // Computed: Get questions for each step based on question_id ranges
+  const step2Questions = computed(() => {
+    return allQuestions.value.filter((q) => q.question_id >= 156 && q.question_id <= 161)
+  })
+
+  const step3Questions = computed(() => {
+    return allQuestions.value.filter((q) => q.question_id >= 162 && q.question_id <= 165)
+  })
+
+  const step4Questions = computed(() => {
+    return allQuestions.value.filter((q) => q.question_id >= 166 && q.question_id <= 167)
   })
 
   // Fetch questions from backend
@@ -76,7 +63,8 @@ export const useFormStore = defineStore('form', () => {
 
     try {
       const response = await apiClient.get('/supplier-to-expert-mapper-questions')
-      questions.value = response.data
+      allQuestions.value = response.data
+      console.log('Questions loaded:', response.data)
     } catch (error: any) {
       questionsError.value = error.message || 'Failed to fetch questions'
       console.error('Error fetching questions:', error)
@@ -90,16 +78,16 @@ export const useFormStore = defineStore('form', () => {
     formData.value.step1 = { ...formData.value.step1, ...data }
   }
 
-  const updateStep2 = (data: Partial<FormData['step2']>) => {
-    formData.value.step2 = { ...formData.value.step2, ...data }
+  const updateStep2 = (questionId: number, answer: any) => {
+    formData.value.step2[questionId] = answer
   }
 
-  const updateStep3 = (data: Partial<FormData['step3']>) => {
-    formData.value.step3 = { ...formData.value.step3, ...data }
+  const updateStep3 = (questionId: number, answer: any) => {
+    formData.value.step3[questionId] = answer
   }
 
-  const updateStep4 = (data: Partial<FormData['step4']>) => {
-    formData.value.step4 = { ...formData.value.step4, ...data }
+  const updateStep4 = (questionId: number, answer: any) => {
+    formData.value.step4[questionId] = answer
   }
 
   // Submit form data to backend
@@ -148,41 +136,33 @@ export const useFormStore = defineStore('form', () => {
         companyName: '',
         selectedCountry: null,
       },
-      step2: {
-        title: '',
-        description: '',
-        selectedChallenges: [],
-        selectedAvailability: '',
-        selectedRegions: [],
-        selectedCountries: [],
-      },
-      step3: {
-        answers: {},
-      },
-      step4: {
-        uploadedFiles: [],
-        videoLink: '',
-        selectedReference: '',
-      },
+      step2: {},
+      step3: {},
+      step4: {},
     }
   }
 
   // Get question by ID
   const getQuestionById = (questionId: number) => {
-    return questions.value.find((q) => q.question_id === questionId)
+    return allQuestions.value.find((q) => q.question_id === questionId)
   }
 
   // Get questions by type
   const getQuestionsByType = (typeId: number) => {
-    return questions.value.filter((q) => q.question_type_id === typeId)
+    return allQuestions.value.filter((q) => q.question_type_id === typeId)
   }
 
   return {
     // State
-    questions,
+    allQuestions,
     questionsLoading,
     questionsError,
     formData,
+
+    // Computed
+    step2Questions,
+    step3Questions,
+    step4Questions,
 
     // Actions
     fetchQuestions,
