@@ -1,5 +1,5 @@
 <template>
-  <Stepper :steps="steps" @submit="submitForm" class="basis-[50rem]">
+  <Stepper :steps="steps" @submit="submitForm">
     <template #step-1>
       <Step1 />
     </template>

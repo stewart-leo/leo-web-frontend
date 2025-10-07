@@ -1,4 +1,6 @@
 import './assets/styles/main.css'
+import './assets/styles/cbre-theme.css'
+import './assets/styles/fonts.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
@@ -27,6 +29,7 @@ import Panel from 'primevue/panel'
 import RadioButton from 'primevue/radiobutton'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
+import Tooltip from 'primevue/tooltip'
 
 import Step from 'primevue/step'
 import Stepper from 'primevue/stepper'
@@ -71,5 +74,7 @@ app.component('PvStepList', StepList)
 app.component('PvStepPanel', StepPanel)
 app.component('PvStepPanels', StepPanels)
 app.component('PvTextArea', Textarea)
+
+app.directive('tooltip', Tooltip)
 
 app.mount('#app')

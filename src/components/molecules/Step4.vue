@@ -15,6 +15,14 @@
             innovation below. All slides should have a widescreen, 16:9 Microsoft PowerPoint
             dimension.
           </p>
+          <p class="upload-description">
+            <strong>Reference</strong><br />
+            A reference document can be provided for any previously completed project(s).
+          </p>
+          <p class="upload-description">
+            <strong>Case Study</strong><br />
+            Case study of previously completed project(s).
+          </p>
           <PvFileUpload
             name="supportingMaterials[]"
             :multiple="true"

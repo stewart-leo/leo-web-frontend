@@ -397,7 +397,7 @@ const saveStep = (step) => {
 }
 
 .section-title i {
-  color: #10b981;
+  color: #003f2d;
 }
 
 .review-content {

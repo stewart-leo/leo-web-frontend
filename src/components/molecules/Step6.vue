@@ -4,10 +4,10 @@
       <div class="success-icon">
         <i class="pi pi-check-circle"></i>
       </div>
-      <h2>Submission Successful!</h2>
+      <h2>Thank you for your submission!</h2>
       <p>
-        Your innovation has been successfully submitted to the CBRE Supplier Management Challenge
-        2025.
+        We look forward to reviewing your entry. if you have any questions please contact
+        ukpreferredsuppliers@cbre.com
       </p>
       <p v-if="sendCopyChecked" class="email-confirmation">
         <i class="pi pi-envelope"></i>
@@ -49,9 +49,9 @@
             If you have questions about this form or tactical steps related to submission, please
             contact:
           </p>
-          <a href="mailto:rachel.edmunds@cbre.com" class="contact-email">
+          <a href="mailto:innovation@leadingedgeonly.com" class="contact-email">
             <i class="pi pi-envelope"></i>
-            rachel.edmunds@cbre.com
+            innovation@leadingedgeonly.com
           </a>
         </div>
       </PvPanel>
@@ -161,9 +161,7 @@ defineExpose({
 .submission-success {
   text-align: center;
   padding: 3rem 2rem;
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
   border-radius: 12px;
-  border: 2px solid #86efac;
 }
 
 .success-icon {
@@ -172,19 +170,22 @@ defineExpose({
 
 .success-icon i {
   font-size: 5rem;
-  color: #10b981;
+  color: #003f2d;
 }
 
 .submission-success h2 {
-  color: #059669;
+  font-family: 'Financier Display', Georgia, serif;
+  color: #003f2d;
   font-size: 2rem;
   margin-bottom: 1rem;
+  font-weight: 500;
 }
 
 .submission-success p {
-  color: #047857;
+  color: #003f2d;
   font-size: 1.1rem;
   margin-bottom: 0.5rem;
+  font-family: 'Financier Display', Georgia, serif;
 }
 
 .email-confirmation {
@@ -224,7 +225,7 @@ defineExpose({
 }
 
 .section-header i {
-  color: #10b981;
+  color: #003f2d;
 }
 
 /* Support Content */
@@ -240,7 +241,7 @@ defineExpose({
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: #0369a1;
+  color: #003f2d;
   text-decoration: none;
   font-size: 1.05rem;
   padding: 0.5rem 1rem;
@@ -270,8 +271,8 @@ defineExpose({
 
 .note-checkbox-group .submission-note {
   margin-bottom: 0 !important;
-  background: #fef3c7 !important;
-  border: 1px solid #fbbf24 !important;
+  background: #cad1d3 !important;
+  border: 1px solid #cad1d3 !important;
   border-bottom: none !important;
   border-bottom-left-radius: 0 !important;
   border-bottom-right-radius: 0 !important;

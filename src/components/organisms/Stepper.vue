@@ -138,7 +138,7 @@ const getStepIcon = (index) => {
 
 .progress-line {
   height: 4px;
-  background: var(--surface-border, #e5e7eb);
+  background: var(--cbre-light-grey, #e5e7eb);
   border-radius: 2px;
   margin-top: 1.5rem;
 }
@@ -147,29 +147,33 @@ const getStepIcon = (index) => {
   height: 100%;
   background: linear-gradient(
     90deg,
-    #10b981 0%,
-    #10b981 50%,
-    rgba(16, 185, 129, 0.6) 75%,
-    rgba(16, 185, 129, 0.3) 90%,
-    rgba(16, 185, 129, 0) 100%
+    var(--cbre-green, #003f2d) 0%,
+    var(--cbre-green, #003f2d) 50%,
+    rgba(0, 63, 45, 0.6) 75%,
+    rgba(0, 63, 45, 0.3) 90%,
+    rgba(0, 63, 45, 0) 100%
   );
   border-radius: 2px;
   transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 0 8px rgba(0, 63, 45, 0.4);
 }
 
 /* Steps */
 .steps-wrapper {
   display: flex;
-  gap: 1rem;
+  justify-content: space-between;
+  gap: 0.5rem;
   overflow-x: auto;
+  margin-top: 20px;
+  width: 100%;
 }
 
 .step-item {
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
-  min-width: 200px;
+  flex: 1;
+  min-width: 0;
   padding: 0.5rem;
   border-radius: 8px;
   transition: all 0.3s ease;
@@ -180,7 +184,7 @@ const getStepIcon = (index) => {
 }
 
 .step-item.clickable:hover {
-  background: var(--surface-hover, #f8f9fa);
+  background: #f8f9fa;
 }
 
 .step-number {
@@ -190,24 +194,25 @@ const getStepIcon = (index) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--surface-ground, #ffffff);
-  border: 2px solid var(--surface-border, #e5e7eb);
+  background: #ffffff;
+  border: 2px solid var(--cbre-light-grey, #e5e7eb);
   font-weight: 600;
   font-size: 0.875rem;
-  color: var(--text-color-secondary, #6b7280);
+  color: var(--cbre-dark-grey, #6b7280);
   transition: all 0.3s ease;
   flex-shrink: 0;
 }
 
 .step-item.active .step-number {
-  background: var(--primary-color, #10b981);
-  border-color: var(--primary-color, #10b981);
+  background: var(--cbre-green, #003f2d);
+  border-color: var(--cbre-green, #003f2d);
   color: white;
+  box-shadow: 0 4px 12px rgba(0, 63, 45, 0.3);
 }
 
 .step-item.completed .step-number {
-  background: var(--primary-color, #10b981);
-  border-color: var(--primary-color, #10b981);
+  background: var(--cbre-green, #003f2d);
+  border-color: var(--cbre-green, #003f2d);
   color: white;
 }
 
@@ -218,33 +223,34 @@ const getStepIcon = (index) => {
 
 .step-label {
   font-weight: 600;
-  font-size: 0.875rem;
-  color: var(--text-color, #374151);
+  font-size: 1.25rem;
+  color: var(--cbre-dark-grey, #374151);
   margin-bottom: 0.25rem;
 }
 
 .step-item.active .step-label {
-  color: var(--primary-color, #10b981);
+  color: var(--cbre-green, #003f2d);
 }
 
 .step-description {
-  font-size: 0.75rem;
-  color: var(--text-color-secondary, #9ca3af);
+  font-size: 1rem;
+  color: #9ca3af;
   line-height: 1.4;
 }
 
 /* Panels */
 .step-panels {
-  background: var(--surface-card, #ffffff);
-  border: 1px solid var(--surface-border, #e5e7eb);
+  background: #ffffff;
+  border: 2px solid var(--cbre-light-grey, #e5e7eb);
   border-radius: 8px;
   padding: 2rem;
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 600px; /* Set a minimum height */
-  height: 600px; /* Or set a fixed height */
+  min-height: 600px;
+  height: 600px;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 63, 45, 0.05);
 }
 
 .step-panels-wrapper {
@@ -254,7 +260,6 @@ const getStepIcon = (index) => {
 }
 
 .step-panel {
-  position: absolute;
   top: 0;
   left: 0;
   right: 0;
@@ -268,26 +273,26 @@ const getStepIcon = (index) => {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-right: 0.5rem; /* Add some padding for scrollbar */
+  padding-right: 0.5rem;
 }
 
-/* Custom scrollbar for better appearance */
+/* Custom scrollbar */
 .step-panel-content::-webkit-scrollbar {
   width: 8px;
 }
 
 .step-panel-content::-webkit-scrollbar-track {
-  background: var(--surface-ground, #f1f1f1);
+  background: #f1f3f5;
   border-radius: 4px;
 }
 
 .step-panel-content::-webkit-scrollbar-thumb {
-  background: var(--surface-border, #888);
+  background: var(--cbre-cement, #888);
   border-radius: 4px;
 }
 
 .step-panel-content::-webkit-scrollbar-thumb:hover {
-  background: var(--text-color-secondary, #555);
+  background: var(--cbre-dark-grey, #555);
 }
 
 @keyframes fadeIn {
@@ -307,11 +312,10 @@ const getStepIcon = (index) => {
   gap: 1rem;
   margin-top: auto;
   padding-top: 2rem;
-  border-top: 1px solid var(--surface-border, #e5e7eb);
+  border-top: 2px solid var(--cbre-light-grey, #e5e7eb);
   flex-shrink: 0;
 }
 
-/* When there's only a Next button (first step), align it to the right */
 .step-navigation:has(> :only-child) {
   justify-content: flex-end;
 }
@@ -343,7 +347,6 @@ const getStepIcon = (index) => {
   }
 }
 
-/* For larger screens, you might want a taller container */
 @media (min-width: 1024px) {
   .step-panels {
     min-height: 650px;

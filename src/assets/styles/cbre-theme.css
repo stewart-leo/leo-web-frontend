@@ -1,0 +1,85 @@
+/* src/assets/styles/cbre-theme.css */
+
+/* Override PrimeVue CSS variables for CBRE branding */
+:root {
+  --p-floatlabel-focus-color: #003f2d !important;
+  --p-floatlabel-active-color: #003f2d !important;
+  --p-primary-color: #003f2d;
+  --p-inputtext-focus-border-color: #003f2d !important;
+  --p-focus-ring-color: rgba(0, 63, 45, 0.2) !important;
+  --p-checkbox-checked-background: #003f2d !important;
+  --p-checkbox-checked-border-color: #003f2d !important;
+  --p-checkbox-checked-hover-background: #003326 !important;
+  --p-checkbox-checked-hover-border-color: #003326 !important;
+  --p-radiobutton-checked-background: #003f2d !important;
+  --p-radiobutton-checked-border-color: #003f2d !important;
+  --p-radiobutton-checked-hover-background: #003326 !important;
+  --p-radiobutton-checked-hover-border-color: #003326 !important;
+  --p-button-text-primary-color: #003f2d !important;
+  --p-button-text-primary-hover-background: rgba(0, 63, 45, 0.04) !important;
+  --p-button-text-primary-active-background: rgba(0, 63, 45, 0.16) !important;
+}
+
+/* CBRE Green for primary buttons */
+.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined) {
+  background: #003f2d;
+  border-color: #003f2d;
+  transition: all 0.3s ease;
+}
+
+.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):enabled:hover {
+  background: #17e88f;
+  border-color: #17e88f;
+  color: #003f2d;
+}
+
+.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):enabled:active {
+  background: #00261f;
+  border-color: #00261f;
+  color: white;
+}
+
+.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):focus {
+  box-shadow: 0 0 0 0.2rem rgba(0, 63, 45, 0.25);
+}
+
+/* Secondary buttons (like Back button) */
+.p-button.p-button-secondary {
+  border-color: #003f2d;
+  color: #003f2d;
+}
+
+.p-button.p-button-secondary:enabled:hover {
+  background: rgba(0, 63, 45, 0.04);
+  border-color: #003f2d;
+  color: #003f2d;
+}
+
+.p-button.p-button-secondary:enabled:active {
+  background: rgba(0, 63, 45, 0.16);
+  border-color: #003f2d;
+  color: #003f2d;
+}
+
+/* FloatLabel - focused label color */
+.p-floatlabel label {
+  color: #6b7280;
+}
+
+.p-floatlabel:has(input:focus) label,
+.p-floatlabel:has(input.p-filled) label,
+.p-floatlabel:has(.p-inputwrapper-focus) label {
+  color: #003f2d;
+}
+
+/* Input focus border color */
+.p-inputtext:enabled:focus {
+  border-color: #003f2d;
+  box-shadow: 0 0 0 0.2rem rgba(0, 63, 45, 0.2);
+}
+
+/* AutoComplete focus */
+.p-autocomplete:not(.p-disabled).p-focus .p-autocomplete-input {
+  border-color: #003f2d;
+  box-shadow: 0 0 0 0.2rem rgba(0, 63, 45, 0.2);
+}
