@@ -26,12 +26,16 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { useFormStore } from '@/stores/formStore'
 import countries from '@/assets/json/countries.json'
 
-const name = ref()
-const companyName = ref()
-const selectedCountry = ref()
+const formStore = useFormStore()
+
+// Initialize with store values
+const name = ref(formStore.formData.step1.name)
+const companyName = ref(formStore.formData.step1.companyName)
+const selectedCountry = ref(formStore.formData.step1.selectedCountry)
 const filteredCountries = ref([])
 
 const searchCountries = (event) => {
@@ -40,6 +44,14 @@ const searchCountries = (event) => {
     country.name.toLowerCase().includes(query),
   )
 }
+
+watch([name, companyName, selectedCountry], () => {
+  formStore.updateStep1({
+    name: name.value,
+    companyName: companyName.value,
+    selectedCountry: selectedCountry.value,
+  })
+})
 </script>
 
 <style scoped>
