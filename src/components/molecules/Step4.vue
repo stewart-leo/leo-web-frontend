@@ -30,6 +30,7 @@
             :maxFileSize="31457000"
             chooseLabel="Choose Files"
             class="custom-file-upload"
+            @select="onFileSelect"
           >
             <template #empty>
               <div class="upload-drop-zone">
@@ -56,14 +57,16 @@
       <div class="form-section">
         <PvFieldset legend="Have you included references and case studies in your application?">
           <div class="radio-options">
-            <div v-for="(option, index) in referenceOptions" :key="index" class="radio-option">
+            <div v-for="option in referenceOptions" :key="option.value" class="radio-option">
               <PvRadioButton
                 v-model="selectedReference"
-                :inputId="`reference_${index}`"
+                :inputId="`reference_${option.value}`"
                 name="reference"
-                :value="option"
+                :value="option.value"
               />
-              <label :for="`reference_${index}`" class="radio-label">{{ option }}</label>
+              <label :for="`reference_${option.value}`" class="radio-label">{{
+                option.label
+              }}</label>
             </div>
           </div>
         </PvFieldset>
@@ -73,17 +76,42 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
+import { useFormStore } from '@/stores/formStore'
+
+const formStore = useFormStore()
 
 const videoLink = ref('')
-const selectedReference = ref('')
+const selectedReference = ref(null)
+const uploadedFiles = ref([])
 
+// Map reference options to answer_id from API (question_id: 167)
 const referenceOptions = [
-  'Reference provided',
-  'Case study provided',
-  'Reference and case study provided',
-  'Neither provided',
+  { value: 298, label: 'Reference provided' },
+  { value: 299, label: 'Case study provided' },
+  { value: 300, label: 'Reference and case study provided' },
+  { value: 301, label: 'Neither provided' },
 ]
+
+// Handle file selection
+const onFileSelect = (event) => {
+  uploadedFiles.value = event.files
+  // Save files to store
+  formStore.updateStep4('uploadedFiles', uploadedFiles.value)
+}
+
+// Load saved data from store on mount
+onMounted(() => {
+  videoLink.value = formStore.formData.step4[166] || ''
+  selectedReference.value = formStore.formData.step4[167] || null
+  uploadedFiles.value = formStore.formData.step4.uploadedFiles || []
+})
+
+// Watch and save to store
+watch([videoLink, selectedReference], () => {
+  formStore.updateStep4(166, videoLink.value) // YouTube or Vimeo link
+  formStore.updateStep4(167, selectedReference.value) // References/case studies
+})
 </script>
 
 <style scoped>
