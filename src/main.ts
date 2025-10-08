@@ -17,6 +17,7 @@ import AutoComplete from 'primevue/autocomplete'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import CheckboxGroup from 'primevue/checkboxgroup'
+import Chip from 'primevue/chip'
 import Fieldset from 'primevue/fieldset'
 import FileUpload from 'primevue/fileupload'
 import FloatLabel from 'primevue/floatlabel'
@@ -56,6 +57,7 @@ app.component('PvAutoComplete', AutoComplete)
 app.component('PvButton', Button)
 app.component('PvCheckbox', Checkbox)
 app.component('PvCheckboxGroup', CheckboxGroup)
+app.component('PvChip', Chip)
 app.component('PvFieldset', Fieldset)
 app.component('PvFileUpload', FileUpload)
 app.component('PvFloatLabel', FloatLabel)

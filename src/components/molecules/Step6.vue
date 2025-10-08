@@ -101,6 +101,16 @@
               This field is required to submit the form
             </small>
           </div>
+
+          <!-- Submission error message -->
+          <PvMessage
+            v-if="submissionError"
+            severity="error"
+            :closable="true"
+            @close="clearSubmissionError"
+          >
+            <strong>Submission Failed:</strong> {{ submissionError }}
+          </PvMessage>
         </div>
       </PvPanel>
     </div>
@@ -109,36 +119,89 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useFormStore } from '@/stores/formStore'
+
+const formStore = useFormStore()
 
 // Form state
 const consentChecked = ref(false)
 const sendCopyChecked = ref(false)
 const consentError = ref(false)
 const isSubmitted = ref(false)
+const submissionError = ref('')
+
+// Clear submission error
+const clearSubmissionError = () => {
+  submissionError.value = ''
+}
 
 // Handle form submission
 const handleSubmit = async () => {
+  // Clear any previous errors
+  consentError.value = false
+  submissionError.value = ''
+
   // Validate consent checkbox
   if (!consentChecked.value) {
     consentError.value = true
+    submissionError.value = 'Please agree to the information sharing policy to continue.'
     return
   }
 
-  // Clear error
-  consentError.value = false
+  try {
+    // Save email preference to store first
+    formStore.updateStep4('sendEmailCopy', sendCopyChecked.value)
 
-  // Simulate submission delay
-  await new Promise((resolve) => setTimeout(resolve, 1000))
+    // Log the payload before submission (for debugging)
+    const payload = formStore.buildSubmissionPayload()
+    console.log('Final submission payload:', JSON.stringify(payload, null, 2))
 
-  // Show success screen
-  isSubmitted.value = true
+    // Submit the form
+    const response = await formStore.submitForm()
+
+    // Show success screen
+    isSubmitted.value = true
+  } catch (error) {
+    console.error('Submission error:', error)
+
+    // Extract error message
+    let errorMessage = 'An unexpected error occurred. Please try again.'
+
+    if (error.response) {
+      // Server responded with error
+      errorMessage =
+        error.response.data?.message ||
+        error.response.data?.error ||
+        `Server error: ${error.response.status}`
+    } else if (error.request) {
+      // Request made but no response
+      errorMessage = 'No response from server. Please check your connection.'
+    } else if (error.message) {
+      // Something else happened
+      errorMessage = error.message
+    }
+
+    submissionError.value = errorMessage
+
+    // Scroll to top to show error message
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 }
 
 const resetForm = () => {
+  // Reset the form store
+  formStore.resetForm()
+
+  // Reset local state
   isSubmitted.value = false
   consentChecked.value = false
   sendCopyChecked.value = false
   consentError.value = false
+  submissionError.value = ''
+
+  // Optionally navigate back to step 1
+  // You might need to emit an event or use router here
+  console.log('Form reset - ready for new submission')
 }
 
 const redirectToMyApplications = () => {
@@ -323,6 +386,21 @@ defineExpose({
   margin: 0;
   border: 1px solid #fbbf24 !important;
   background: #fef3c7 !important;
+}
+
+:deep(.p-message.p-message-error) {
+  border: 1px solid #f87171 !important;
+  background: #fee2e2 !important;
+  margin-top: 1rem;
+  border-radius: 8px;
+}
+
+:deep(.p-message.p-message-error .p-message-text) {
+  color: #991b1b !important;
+}
+
+:deep(.p-message.p-message-error .p-message-icon) {
+  color: #dc2626 !important;
 }
 
 :deep(.p-message-wrapper) {

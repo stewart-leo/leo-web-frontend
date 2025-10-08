@@ -30,15 +30,15 @@
       <div v-if="!editingStep1" class="review-content">
         <div class="review-item">
           <label>Name:</label>
-          <span>{{ mockData.supplierDetails.name }}</span>
+          <span>{{ formStore.formData.step1.name || 'Not provided' }}</span>
         </div>
         <div class="review-item">
           <label>Company Name:</label>
-          <span>{{ mockData.supplierDetails.companyName }}</span>
+          <span>{{ formStore.formData.step1.companyName || 'Not provided' }}</span>
         </div>
         <div class="review-item">
           <label>Country:</label>
-          <span>{{ mockData.supplierDetails.country }}</span>
+          <span>{{ formStore.formData.step1.selectedCountry?.name || 'Not provided' }}</span>
         </div>
       </div>
 
@@ -77,57 +77,40 @@
       <div v-if="!editingStep2" class="review-content">
         <div class="review-item">
           <label>Innovation Title:</label>
-          <span>{{ mockData.innovationDetails.title }}</span>
+          <span>{{ formStore.formData.step2[156] || 'Not provided' }}</span>
         </div>
         <div class="review-item">
           <label>Description:</label>
-          <p class="description-text">{{ mockData.innovationDetails.description }}</p>
+          <p class="description-text">{{ formStore.formData.step2[157] || 'Not provided' }}</p>
         </div>
         <div class="review-item">
           <label>Client Challenges:</label>
-          <div class="tag-container">
-            <PvChip
-              v-for="challenge in mockData.innovationDetails.challenges"
-              :key="challenge"
-              :label="challenge"
-            />
+          <div class="tag-container" v-if="getChallengeLabels().length > 0">
+            <PvChip v-for="challenge in getChallengeLabels()" :key="challenge" :label="challenge" />
           </div>
+          <span v-else>Not provided</span>
         </div>
         <div class="review-item">
           <label>Solution Availability:</label>
-          <span class="availability-status">{{
-            getAvailabilityLabel(mockData.innovationDetails.availability)
-          }}</span>
+          <span class="availability-status">{{ getAvailabilityLabel() }}</span>
         </div>
 
-        <!-- Conditionally show regions if 'select_regions' was chosen -->
-        <div
-          v-if="mockData.innovationDetails.availability === 'select_regions'"
-          class="review-item"
-        >
+        <!-- Conditionally show regions if 'Available in select regions' was chosen -->
+        <div v-if="formStore.formData.step2[159] === 270" class="review-item">
           <label>Selected Regions:</label>
-          <div class="tag-container">
-            <PvChip
-              v-for="region in mockData.innovationDetails.regions"
-              :key="region"
-              :label="region"
-            />
+          <div class="tag-container" v-if="getRegionLabels().length > 0">
+            <PvChip v-for="region in getRegionLabels()" :key="region" :label="region" />
           </div>
+          <span v-else>Not provided</span>
         </div>
 
-        <!-- Conditionally show countries if 'specific_countries' was chosen -->
-        <div
-          v-if="mockData.innovationDetails.availability === 'specific_countries'"
-          class="review-item"
-        >
+        <!-- Conditionally show countries if 'specific countries' was chosen -->
+        <div v-if="formStore.formData.step2[159] === 271" class="review-item">
           <label>Specific Countries:</label>
-          <div class="tag-container">
-            <PvChip
-              v-for="country in mockData.innovationDetails.countries"
-              :key="country"
-              :label="country"
-            />
+          <div class="tag-container" v-if="getCountryLabels().length > 0">
+            <PvChip v-for="country in getCountryLabels()" :key="country" :label="country" />
           </div>
+          <span v-else>Not provided</span>
         </div>
       </div>
 
@@ -165,12 +148,12 @@
 
       <div v-if="!editingStep3" class="review-content">
         <div
-          v-for="(answer, index) in mockData.innovationRelevance"
-          :key="index"
+          v-for="questionId in [162, 163, 164, 165]"
+          :key="questionId"
           class="review-item question-review"
         >
-          <label class="question-label">{{ answer.question }}</label>
-          <span class="answer-text">{{ answer.answer }}</span>
+          <label class="question-label">{{ getQuestionText(questionId) }}</label>
+          <span class="answer-text">{{ getAnswerText(questionId) }}</span>
         </div>
       </div>
 
@@ -209,15 +192,23 @@
       <div v-if="!editingStep4" class="review-content">
         <div class="review-item">
           <label>Uploaded Files:</label>
-          <span>{{ mockData.supportingMaterials.filesCount }} file(s) uploaded</span>
+          <span v-if="formStore.formData.step4.uploadedFiles?.length > 0">
+            {{ formStore.formData.step4.uploadedFiles.length }} file(s) uploaded
+          </span>
+          <span v-else>No files uploaded</span>
+          <ul v-if="formStore.formData.step4.uploadedFiles?.length > 0" class="file-list">
+            <li v-for="(file, index) in formStore.formData.step4.uploadedFiles" :key="index">
+              <i class="pi pi-file"></i> {{ file.source_name }}
+            </li>
+          </ul>
         </div>
         <div class="review-item">
           <label>Video Link:</label>
-          <span>{{ mockData.supportingMaterials.videoLink || 'Not provided' }}</span>
+          <span>{{ formStore.formData.step4[166] || 'Not provided' }}</span>
         </div>
         <div class="review-item">
           <label>References/Case Studies:</label>
-          <span>{{ mockData.supportingMaterials.references }}</span>
+          <span>{{ getReferenceLabel() }}</span>
         </div>
       </div>
 
@@ -234,7 +225,8 @@
           <div>
             <h4>Form Status</h4>
             <p>
-              All sections have been completed. You can edit any section before final submission.
+              Please review all sections before final submission. You can edit any section if
+              needed.
             </p>
           </div>
         </div>
@@ -244,17 +236,16 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useFormStore } from '@/stores/formStore'
 import Step1 from '@/components/molecules/Step1.vue'
 import Step2 from '@/components/molecules/Step2.vue'
 import Step3 from '@/components/molecules/Step3.vue'
 import Step4 from '@/components/molecules/Step4.vue'
-import Chip from 'primevue/chip'
-import Message from 'primevue/message'
 
 // Register components locally
-const PvChip = Chip
-const PvMessage = Message
+
+const formStore = useFormStore()
 
 // Edit state for each section
 const editingStep1 = ref(false)
@@ -262,56 +253,89 @@ const editingStep2 = ref(false)
 const editingStep3 = ref(false)
 const editingStep4 = ref(false)
 
-const mockData = ref({
-  supplierDetails: {
-    name: 'John Smith',
-    companyName: 'InnovateTech Solutions Ltd.',
-    country: 'United Kingdom',
-  },
-  innovationDetails: {
-    title: 'AI-Powered Facility Management Platform',
-    description:
-      'An innovative platform that leverages artificial intelligence and IoT sensors to optimize building operations, reduce energy consumption, and improve occupant comfort. The solution provides real-time monitoring, predictive maintenance, and automated control systems.',
-    challenges: ['Smart FM Solutions & AI', 'ESG', 'Workplace Experience'],
-    availability: 'select_regions',
-    regions: ['EMEA', 'Americas'],
-    countries: [],
-  },
-  innovationRelevance: [
-    {
-      question: 'What is the expected ROI of this innovation, and over what timeframe?',
-      answer: 'High ROI within 8 months',
-    },
-    {
-      question:
-        'How easily can this innovation be integrated into existing CBRE operations or client environments?',
-      answer: 'Minor adjustments needed; low effort integration',
-    },
-    {
-      question: 'How does this innovation differentiate CBRE from competitors?',
-      answer: 'Emerging innovation; few competitors currently using',
-    },
-    {
-      question: 'How does this innovation create measurable value for CBRE and its clients?',
-      answer: 'Strong value for both CBRE and clients (e.g. cost, ESG, satisfaction)',
-    },
-  ],
-  supportingMaterials: {
-    filesCount: 3,
-    videoLink: 'https://www.youtube.com/watch?v=demo123',
-    references: 'Reference and case study provided',
-    consent: true,
-  },
-})
+// Challenge mapping (answer_id to label)
+const challengeMap = {
+  264: 'Sustainable Solutions',
+  265: 'Smart FM & AI driven Solutions',
+  266: 'Soft Services Innovation',
+  267: 'Workplace Experience Enhancements',
+  268: 'Operational Efficiencies',
+}
 
-const getAvailabilityLabel = (value) => {
-  const labels = {
-    globally_available: 'Yes, globally available',
-    select_regions: 'Available in select regions',
-    specific_countries: 'Not currently available outside specific countries',
-    unknown: 'Availability unknown',
+// Region mapping (answer_id to label)
+const regionMap = {
+  273: 'Americas',
+  274: 'APAC',
+  275: 'EMEA',
+  276: 'UK',
+  277: 'Ireland',
+}
+
+// Availability mapping (answer_id to label)
+const availabilityMap = {
+  269: 'Yes, globally available',
+  270: 'Available in select regions',
+  271: 'Not currently available outside specific countries',
+  272: 'Availability unknown',
+}
+
+// Reference mapping (answer_id to label)
+const referenceMap = {
+  298: 'Reference provided',
+  299: 'Case study provided',
+  300: 'Reference and case study provided',
+  301: 'Neither provided',
+}
+
+// Get challenge labels from answer IDs
+const getChallengeLabels = () => {
+  const answerIds = formStore.formData.step2[158] || []
+  return answerIds.map((id) => challengeMap[id] || 'Unknown').filter(Boolean)
+}
+
+// Get region labels from answer IDs
+const getRegionLabels = () => {
+  const answerIds = formStore.formData.step2[160] || []
+  return answerIds.map((id) => regionMap[id] || 'Unknown').filter(Boolean)
+}
+
+// Get country labels from country objects
+const getCountryLabels = () => {
+  const countries = formStore.formData.step2[161] || []
+  if (Array.isArray(countries)) {
+    return countries.map((country) => country.name || 'Unknown').filter(Boolean)
   }
-  return labels[value] || value
+  return []
+}
+
+// Get availability label
+const getAvailabilityLabel = () => {
+  const answerId = formStore.formData.step2[159]
+  return availabilityMap[answerId] || 'Not provided'
+}
+
+// Get reference label
+const getReferenceLabel = () => {
+  const answerId = formStore.formData.step4[167]
+  return referenceMap[answerId] || 'Not provided'
+}
+
+// Get question text by ID from store
+const getQuestionText = (questionId) => {
+  const question = formStore.getQuestionById(questionId)
+  return question?.question_text || 'Question not found'
+}
+
+// Get answer text by question ID
+const getAnswerText = (questionId) => {
+  const answerId = formStore.formData.step3[questionId]
+  if (!answerId) return 'Not provided'
+
+  const question = formStore.getQuestionById(questionId)
+  if (!question) return 'Not provided'
+
+  const option = question.question_answer_options.find((opt) => opt.answer_id === answerId)
+  return option?.answer_text || 'Not provided'
 }
 
 // Toggle edit mode for a step
@@ -338,8 +362,9 @@ const toggleEdit = (step) => {
   }
 }
 
-// Save function (mock)
+// Save function - just closes the edit panel
 const saveStep = (step) => {
+  // Data is already saved to store via watch in each step component
   switch (step) {
     case 1:
       editingStep1.value = false
@@ -354,7 +379,6 @@ const saveStep = (step) => {
       editingStep4.value = false
       break
   }
-  // In a real implementation, this would save data to a store
 }
 </script>
 
@@ -445,6 +469,23 @@ const saveStep = (step) => {
   margin-top: 0.25rem;
 }
 
+.file-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0 0;
+}
+
+.file-list li {
+  padding: 0.25rem 0;
+  color: #4b5563;
+  font-size: 0.9rem;
+}
+
+.file-list li i {
+  margin-right: 0.5rem;
+  color: #6b7280;
+}
+
 .question-review {
   padding: 0.75rem 0;
   border-bottom: 1px solid #e5e7eb;
@@ -467,20 +508,6 @@ const saveStep = (step) => {
 
 .edit-content {
   padding: 1rem;
-}
-
-.text-success {
-  color: #10b981;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.text-danger {
-  color: #ef4444;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .status-summary {

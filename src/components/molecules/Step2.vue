@@ -16,7 +16,7 @@
             }"
           ></i>
         </div>
-        <PvTextArea id="descripton" v-model="value1" :autoResize="true" rows="3" />
+        <PvTextArea id="descripton" v-model="description" :autoResize="true" rows="3" />
       </div>
 
       <PvFieldset legend="What client challenge is your innovation solving?">
@@ -29,7 +29,7 @@
             v-model="selectedChallenges"
             :inputId="challenge.id"
             name="challenge"
-            :value="challenge.label"
+            :value="challenge.value"
           />
           <label :for="challenge.id" class="ml-2 challenge-label">
             {{ challenge.label }}
@@ -52,52 +52,61 @@
         >
           <PvRadioButton
             v-model="selectedAvailability"
-            :inputId="option.value"
+            :inputId="`availability_${option.value}`"
             name="availability"
             :value="option.value"
           />
-          <label :for="option.value" class="ml-2">{{ option.label }}</label>
+          <label :for="`availability_${option.value}`" class="ml-2">{{ option.label }}</label>
         </div>
       </PvFieldset>
 
       <PvFieldset
-        v-if="selectedAvailability === 'select_regions'"
+        v-if="selectedAvailability === 270"
         legend="What is the regional application of this innovation?"
       >
-        <div v-for="region of regions" :key="region" class="flex align-items-center">
-          <PvCheckbox v-model="selectedRegions" :inputId="region" name="region" :value="region" />
-          <label :for="region" class="ml-2">{{ region }}</label>
+        <div v-for="region of regionOptions" :key="region.value" class="flex align-items-center">
+          <PvCheckbox
+            v-model="selectedRegions"
+            :inputId="`region_${region.value}`"
+            name="region"
+            :value="region.value"
+          />
+          <label :for="`region_${region.value}`" class="ml-2">{{ region.label }}</label>
         </div>
       </PvFieldset>
 
-      <PvFloatLabel v-if="selectedAvailability === 'specific_countries'" class="w-full md:w-80">
+      <PvFloatLabel v-if="selectedAvailability === 271" class="w-full md:w-80">
         <PvMultiSelect
-          id="country"
+          id="countries"
           v-model="selectedCountries"
           :options="countryOptions"
           display="chip"
           optionLabel="name"
           filter
-          :maxSelectedLabels="3"
+          :maxSelectedLabels="5"
+          :selectionLimit="5"
           class="w-full"
         />
-        <label for="country"> Please list specific countries your innovation is applicable </label>
+        <label for="countries">Please list specific countries your innovation is applicable</label>
       </PvFloatLabel>
     </div>
   </PvPanel>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import regions from '@/assets/json/regions.json'
+import { ref, watch, onMounted } from 'vue'
+import { useFormStore } from '@/stores/formStore'
 import countries from '@/assets/json/countries.json'
 
+const formStore = useFormStore()
+
+// Form fields
 const title = ref('')
-const value1 = ref('')
+const description = ref('')
 const selectedChallenges = ref([])
+const selectedAvailability = ref(null)
 const selectedRegions = ref([])
 const selectedCountries = ref([])
-const selectedAvailability = ref('')
 
 const descriptionTooltip = `<div style="line-height: 1.6;">
   <strong>Tip:</strong> Please keep your description short and concise. You may want to consider including the following:
@@ -107,9 +116,11 @@ const descriptionTooltip = `<div style="line-height: 1.6;">
   </ul>
 </div>`
 
+// Map challenges to answer_id from API (question_id: 158)
 const challenges = [
   {
     id: 'smart-fm-ai',
+    value: 265,
     label: 'Smart FM & AI driven Solutions',
     tooltip: `<ul>
       <li>Increased efficiencies and operational reliability</li>
@@ -123,6 +134,7 @@ const challenges = [
   },
   {
     id: 'sustainable-solutions',
+    value: 264,
     label: 'Sustainable Solutions',
     tooltip: `<ul>
       <li>Carbon/ energy reduction</li>
@@ -135,6 +147,7 @@ const challenges = [
   },
   {
     id: 'workplace-experience',
+    value: 267,
     label: 'Workplace Experience Enhancements',
     tooltip: `<ul>
       <li>Employee wellbeing</li>
@@ -149,6 +162,7 @@ const challenges = [
   },
   {
     id: 'operational-efficiencies',
+    value: 268,
     label: 'Operational Efficiencies',
     tooltip: `<ul>
       <li>Operational efficiencies (i.e. reducing maintenance costs/ frequency of visits)</li>
@@ -160,6 +174,7 @@ const challenges = [
   },
   {
     id: 'soft-services',
+    value: 266,
     label: 'Soft Services Innovation',
     tooltip: `<ul>
       <li>Robotics and automation</li>
@@ -169,22 +184,66 @@ const challenges = [
   },
 ]
 
+// Map availability options to answer_id from API (question_id: 159)
 const availabilityOptions = [
-  { value: 'globally_available', label: 'Yes, globally available' },
-  { value: 'select_regions', label: 'Available in select regions' },
-  { value: 'specific_countries', label: 'Not currently available outside specific countries' },
-  { value: 'unknown', label: 'Availability unknown' },
+  { value: 269, label: 'Yes, globally available' },
+  { value: 270, label: 'Available in select regions' },
+  { value: 271, label: 'Not currently available outside specific countries' },
+  { value: 272, label: 'Availability unknown' },
 ]
 
+// Map regions to answer_id from API (question_id: 160)
+const regionOptions = [
+  { value: 273, label: 'Americas' },
+  { value: 274, label: 'APAC' },
+  { value: 275, label: 'EMEA' },
+  { value: 276, label: 'UK' },
+  { value: 277, label: 'Ireland' },
+]
+
+// Country options for MultiSelect
 const countryOptions = countries.map((country) => ({ name: country.name }))
+
+// Load saved data from store on mount
+onMounted(() => {
+  title.value = formStore.formData.step2[156] || ''
+  description.value = formStore.formData.step2[157] || ''
+  selectedChallenges.value = formStore.formData.step2[158] || []
+  selectedAvailability.value = formStore.formData.step2[159] || null
+  selectedRegions.value = formStore.formData.step2[160] || []
+  selectedCountries.value = formStore.formData.step2[161] || []
+})
+
+// Watch and save to store
+watch(
+  [
+    title,
+    description,
+    selectedChallenges,
+    selectedAvailability,
+    selectedRegions,
+    selectedCountries,
+  ],
+  () => {
+    formStore.updateStep2(156, title.value) // Innovation title
+    formStore.updateStep2(157, description.value) // Short description
+    formStore.updateStep2(158, selectedChallenges.value) // Client challenge (checkbox - array)
+    formStore.updateStep2(159, selectedAvailability.value) // Multiple countries (radio - single value)
+    formStore.updateStep2(160, selectedRegions.value) // Regional application (checkbox - array)
+    formStore.updateStep2(161, selectedCountries.value) // Specific countries (multiselect - array)
+  },
+  { deep: true },
+)
 
 // Clear dependent fields when availability changes
 watch(selectedAvailability, (newValue) => {
-  if (newValue !== 'select_regions') {
+  if (newValue !== 270) {
     selectedRegions.value = []
+    formStore.updateStep2(160, [])
   }
-  if (newValue !== 'specific_countries') {
+  if (newValue !== 271) {
     selectedCountries.value = []
+    formStore.updateStep2(161, [])
   }
 })
 </script>
@@ -202,13 +261,6 @@ watch(selectedAvailability, (newValue) => {
 :deep(.p-inputtext),
 :deep(.p-autocomplete) {
   width: 100%;
-}
-.checkbox-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-left: 0.3rem;
-  margin-top: -1rem;
 }
 .p-checkbox,
 .p-radiobutton {

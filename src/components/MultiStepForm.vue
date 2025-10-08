@@ -66,10 +66,10 @@ const steps = [
   },
 ]
 
-function submitForm() {
-  console.log('Form submission initiated from Step6')
+async function submitForm() {
+  console.log('Form submission initiated from MultiStepForm')
   if (step6Ref.value) {
-    step6Ref.value.handleSubmit()
+    await step6Ref.value.handleSubmit()
   }
 }
 </script>
