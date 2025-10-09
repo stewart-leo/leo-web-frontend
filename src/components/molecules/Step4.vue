@@ -126,9 +126,17 @@
             the link here versus uploading the native file.
           </p>
           <PvIftaLabel class="w-full">
-            <PvInputText id="videoLink" v-model="videoLink" class="w-full" />
+            <PvInputText
+              id="videoLink"
+              v-model="videoLink"
+              class="w-full"
+              :invalid="!!errors.videoLink"
+            />
             <label for="videoLink">Video URL</label>
           </PvIftaLabel>
+          <small v-if="errors.videoLink" class="error-text">
+            {{ errors.videoLink }}
+          </small>
         </PvFieldset>
       </div>
 
@@ -147,31 +155,43 @@
               }}</label>
             </div>
           </div>
+          <small v-if="errors.selectedReference" class="error-text">
+            {{ errors.selectedReference }}
+          </small>
         </PvFieldset>
       </div>
     </div>
   </PvPanel>
 </template>
 
-<script setup>
-import { ref, watch, onMounted } from 'vue'
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+import { useForm, useField } from 'vee-validate'
+import { string, number } from 'yup'
 import { useFormStore } from '@/stores/formStore'
 import axios from 'axios'
 
 const formStore = useFormStore()
 
-const videoLink = ref('')
-const selectedReference = ref(null)
-const uploadedFilesList = ref([]) // Stores S3 paths after upload
-const uploadStatus = ref(null)
-const uploadError = ref('')
-const fileInputRef = ref(null)
-const selectedFiles = ref([])
-const uploadProgress = ref([]) // Track progress per file
+interface UploadedFile {
+  source_name: string
+  uploaded_name: string
+  bucket: string
+}
 
-const MAX_FILES = 5 // Maximum number of files allowed
+interface UploadProgress {
+  status: 'pending' | 'uploading' | 'complete'
+}
 
-// Map reference options to answer_id from API (question_id: 167)
+const uploadedFilesList = ref<UploadedFile[]>([])
+const uploadStatus = ref<'success' | 'error' | 'uploading' | null>(null)
+const uploadError = ref<string>('')
+const fileInputRef = ref<HTMLInputElement | null>(null)
+const selectedFiles = ref<File[]>([])
+const uploadProgress = ref<UploadProgress[]>([])
+
+const MAX_FILES = 5
+
 const referenceOptions = [
   { value: 298, label: 'Reference provided' },
   { value: 299, label: 'Case study provided' },
@@ -179,12 +199,46 @@ const referenceOptions = [
   { value: 301, label: 'Neither provided' },
 ]
 
+const { errors, validate, setFieldError } = useForm({
+  initialValues: {
+    videoLink: formStore.formData.step4[166] || '',
+    selectedReference: formStore.formData.step4[167] || null,
+  },
+  validateOnMount: false,
+})
+
+const isValidUrl = (value: string | undefined): boolean => {
+  if (!value) return true
+
+  // Regex pattern for URL validation - accepts with or without protocol
+  const urlPattern =
+    /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/
+
+  return urlPattern.test(value)
+}
+
+const { value: videoLink } = useField<string>(
+  'videoLink',
+  string()
+    .test('is-url', 'Please enter a valid URL', isValidUrl)
+    .transform((value) => value || undefined)
+    .optional(),
+  { validateOnValueUpdate: false },
+)
+
+const { value: selectedReference } = useField<number | null>(
+  'selectedReference',
+  number().required('Please select an option').typeError('Please select an option'),
+  { validateOnValueUpdate: false },
+)
+
+uploadedFilesList.value = formStore.formData.step4.uploadedFiles || []
+
 const clearError = () => {
   uploadStatus.value = null
   uploadError.value = ''
 }
 
-// Open file dialog
 const openFileDialog = () => {
   if (selectedFiles.value.length >= MAX_FILES) {
     uploadStatus.value = 'error'
@@ -194,12 +248,11 @@ const openFileDialog = () => {
   fileInputRef.value?.click()
 }
 
-// Handle file selection
-const onFileInputChange = (event) => {
-  const newFiles = Array.from(event.target.files || [])
+const onFileInputChange = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const newFiles = Array.from(target.files || [])
 
   newFiles.forEach((newFile) => {
-    // Check if we've reached the limit
     if (selectedFiles.value.length >= MAX_FILES) {
       uploadStatus.value = 'error'
       uploadError.value = `Maximum ${MAX_FILES} files allowed. Only the first ${MAX_FILES} files were added.`
@@ -221,31 +274,26 @@ const onFileInputChange = (event) => {
   }
 }
 
-// Remove individual file
-const removeFile = (index) => {
+const removeFile = (index: number) => {
   selectedFiles.value.splice(index, 1)
-  // Clear error if it was about file limit
   if (uploadStatus.value === 'error' && uploadError.value.includes('Maximum')) {
     uploadStatus.value = null
     uploadError.value = ''
   }
 }
 
-// Clear all files
 const clearFiles = () => {
   selectedFiles.value = []
   if (fileInputRef.value) {
     fileInputRef.value.value = ''
   }
-  // Clear any file limit errors
   if (uploadStatus.value === 'error' && uploadError.value.includes('Maximum')) {
     uploadStatus.value = null
     uploadError.value = ''
   }
 }
 
-// Format file size
-const formatFileSize = (bytes) => {
+const formatFileSize = (bytes: number) => {
   if (bytes === 0) return '0 Bytes'
   const k = 1024
   const sizes = ['Bytes', 'KB', 'MB', 'GB']
@@ -253,7 +301,6 @@ const formatFileSize = (bytes) => {
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
 }
 
-// Upload files
 const uploadFiles = async () => {
   if (selectedFiles.value.length === 0) {
     return
@@ -267,21 +314,19 @@ const uploadFiles = async () => {
 
   uploadStatus.value = 'uploading'
   uploadError.value = ''
-  uploadProgress.value = selectedFiles.value.map(() => ({ status: 'pending' }))
+  uploadProgress.value = selectedFiles.value.map(() => ({ status: 'pending' as const }))
 
   console.log('Starting upload process for', selectedFiles.value.length, 'files...')
 
   try {
-    const uploadedFiles = []
+    const uploadedFiles: UploadedFile[] = []
 
-    // Process each file sequentially
     for (let i = 0; i < selectedFiles.value.length; i++) {
       const file = selectedFiles.value[i]
       uploadProgress.value[i].status = 'uploading'
 
       console.log(`Processing file ${i + 1}/${selectedFiles.value.length}:`, file.name)
 
-      // Step 1: Get presigned URL from backend
       const presignedResponse = await formStore.getPresignedUrl({
         'file-name': file.name,
         'file-type': file.type,
@@ -289,7 +334,6 @@ const uploadFiles = async () => {
 
       console.log('Presigned URL response:', presignedResponse)
 
-      // Step 2: Upload file directly to S3 using presigned URL
       await axios.put(presignedResponse.uri, file, {
         headers: {
           'Content-Type': file.type,
@@ -299,50 +343,63 @@ const uploadFiles = async () => {
 
       console.log(`File ${i + 1} uploaded to S3 successfully`)
 
-      // Step 3: Store the S3 path information
       uploadedFiles.push({
-        source_name: file.name, // Original filename
-        uploaded_name: presignedResponse['full-path'], // S3 path
+        source_name: file.name,
+        uploaded_name: presignedResponse['full-path'],
         bucket: presignedResponse.bucket,
       })
 
       uploadProgress.value[i].status = 'complete'
     }
 
-    // Save all uploaded file paths to store
     uploadedFilesList.value = [...uploadedFilesList.value, ...uploadedFiles]
     formStore.updateStep4('uploadedFiles', uploadedFilesList.value)
 
     uploadStatus.value = 'success'
 
-    // DON'T clear files - keep them visible
-    // clearFiles() // REMOVED THIS LINE
-
     console.log('All files uploaded successfully:', uploadedFiles)
 
-    // Reset success status after 3 seconds
     setTimeout(() => {
       uploadStatus.value = null
       uploadProgress.value = []
     }, 3000)
-  } catch (error) {
+  } catch (error: any) {
     console.error('File upload error:', error)
     console.error('Error response:', error.response)
     uploadStatus.value = 'error'
     uploadError.value = error.response?.data?.message || error.message || 'Failed to upload files'
   }
 }
-// Load saved data from store on mount
-onMounted(() => {
-  videoLink.value = formStore.formData.step4[166] || ''
-  selectedReference.value = formStore.formData.step4[167] || null
-  uploadedFilesList.value = formStore.formData.step4.uploadedFiles || []
+
+watch(videoLink, (newValue) => {
+  formStore.updateStep4(166, newValue)
+  if (newValue) setFieldError('videoLink', undefined)
 })
 
-// Watch and save to store
-watch([videoLink, selectedReference], () => {
-  formStore.updateStep4(166, videoLink.value)
-  formStore.updateStep4(167, selectedReference.value)
+watch(selectedReference, (newValue) => {
+  formStore.updateStep4(167, newValue)
+  if (newValue !== null) setFieldError('selectedReference', undefined)
+})
+
+const validateAll = async () => {
+  // Check if there are files selected but not uploaded
+  if (selectedFiles.value.length > 0) {
+    uploadError.value =
+      "Please upload the selected files before proceeding, or clear them if you don't want to upload."
+    uploadStatus.value = 'error'
+    return false
+  }
+
+  const result = await validate()
+  return result.valid
+}
+
+defineExpose({
+  validateAll,
+  isValid: async () => {
+    const result = await validate()
+    return result.valid
+  },
 })
 </script>
 
@@ -459,5 +516,22 @@ watch([videoLink, selectedReference], () => {
 }
 :deep(.p-message) {
   margin-bottom: 1rem;
+}
+
+.error-text {
+  display: block;
+  color: #dc2626;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  margin-left: 0.25rem;
+}
+
+:deep(.p-inputtext.p-invalid) {
+  border-color: #dc2626;
+}
+
+:deep(.p-inputtext.p-invalid:focus) {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.2);
 }
 </style>

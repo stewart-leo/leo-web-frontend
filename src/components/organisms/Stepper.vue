@@ -138,8 +138,8 @@ const getStepComponentRef = (stepValue: string): StepComponent | null => {
 
 // Handle Next button click
 const handleNext = async (step: Step, index: number) => {
-  // Validate Step 1, Step 2, or Step 3
-  if (step.value === '1' || step.value === '2' || step.value === '3') {
+  // Validate Step 1, Step 2, Step 3, or Step 4
+  if (step.value === '1' || step.value === '2' || step.value === '3' || step.value === '4') {
     const stepComponent = getStepComponentRef(step.value)
 
     if (stepComponent && typeof stepComponent.validateAll === 'function') {
@@ -167,10 +167,13 @@ const handleStepClick = async (stepValue: string) => {
   const targetStepValue = parseInt(stepValue)
   const currentStepNum = parseInt(currentStepValue)
 
-  // If trying to go forward, validate current step if it's Step 1, 2, or 3
+  // If trying to go forward, validate current step if it's Step 1, 2, 3, or 4
   if (
     targetStepValue > currentStepNum &&
-    (currentStepValue === '1' || currentStepValue === '2' || currentStepValue === '3')
+    (currentStepValue === '1' ||
+      currentStepValue === '2' ||
+      currentStepValue === '3' ||
+      currentStepValue === '4')
   ) {
     const stepComponent = getStepComponentRef(currentStepValue)
 
