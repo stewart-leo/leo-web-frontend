@@ -43,7 +43,7 @@
       </div>
 
       <div v-else class="edit-content">
-        <Step1 />
+        <Step1 ref="embeddedStep1Ref" />
       </div>
     </PvPanel>
 
@@ -76,37 +76,76 @@
 
       <div v-if="!editingStep2" class="review-content">
         <div class="review-item">
-          <label>Innovation Title:</label>
-          <span>{{ formStore.formData.step2[156] || 'Not provided' }}</span>
+          <label>{{ getQuestionText(formStore.Q.INNOVATION_TITLE) }}:</label>
+          <span>{{
+            formStore.formData.step2[formStore.Q.INNOVATION_TITLE] || 'Not provided'
+          }}</span>
         </div>
         <div class="review-item">
-          <label>Description:</label>
-          <p class="description-text">{{ formStore.formData.step2[157] || 'Not provided' }}</p>
+          <label>{{ getQuestionText(formStore.Q.SHORT_DESCRIPTION) }}:</label>
+          <p class="description-text">
+            {{ formStore.formData.step2[formStore.Q.SHORT_DESCRIPTION] || 'Not provided' }}
+          </p>
         </div>
         <div class="review-item">
-          <label>Client Challenges:</label>
-          <div class="tag-container" v-if="getChallengeLabels().length > 0">
-            <PvChip v-for="challenge in getChallengeLabels()" :key="challenge" :label="challenge" />
+          <label>{{ getQuestionText(formStore.Q.CLIENT_CHALLENGE) }}:</label>
+          <div
+            class="tag-container"
+            v-if="
+              getAnswerLabels(
+                formStore.Q.CLIENT_CHALLENGE,
+                formStore.formData.step2[formStore.Q.CLIENT_CHALLENGE],
+              ).length > 0
+            "
+          >
+            <PvChip
+              v-for="label in getAnswerLabels(
+                formStore.Q.CLIENT_CHALLENGE,
+                formStore.formData.step2[formStore.Q.CLIENT_CHALLENGE],
+              )"
+              :key="label"
+              :label="label"
+            />
           </div>
           <span v-else>Not provided</span>
         </div>
         <div class="review-item">
-          <label>Solution Availability:</label>
-          <span class="availability-status">{{ getAvailabilityLabel() }}</span>
+          <label>{{ getQuestionText(formStore.Q.SOLUTION_AVAILABILITY) }}:</label>
+          <span class="availability-status">{{
+            getSingleAnswerLabel(
+              formStore.Q.SOLUTION_AVAILABILITY,
+              formStore.formData.step2[formStore.Q.SOLUTION_AVAILABILITY],
+            )
+          }}</span>
         </div>
 
-        <!-- Conditionally show regions if 'Available in select regions' was chosen -->
-        <div v-if="formStore.formData.step2[159] === 270" class="review-item">
-          <label>Selected Regions:</label>
-          <div class="tag-container" v-if="getRegionLabels().length > 0">
-            <PvChip v-for="region in getRegionLabels()" :key="region" :label="region" />
+        <!-- Conditionally show regions -->
+        <div v-if="shouldShowRegions()" class="review-item">
+          <label>{{ getQuestionText(formStore.Q.REGIONAL_APPLICATION) }}:</label>
+          <div
+            class="tag-container"
+            v-if="
+              getAnswerLabels(
+                formStore.Q.REGIONAL_APPLICATION,
+                formStore.formData.step2[formStore.Q.REGIONAL_APPLICATION],
+              ).length > 0
+            "
+          >
+            <PvChip
+              v-for="label in getAnswerLabels(
+                formStore.Q.REGIONAL_APPLICATION,
+                formStore.formData.step2[formStore.Q.REGIONAL_APPLICATION],
+              )"
+              :key="label"
+              :label="label"
+            />
           </div>
           <span v-else>Not provided</span>
         </div>
 
-        <!-- Conditionally show countries if 'specific countries' was chosen -->
-        <div v-if="formStore.formData.step2[159] === 271" class="review-item">
-          <label>Specific Countries:</label>
+        <!-- Conditionally show countries -->
+        <div v-if="shouldShowCountries()" class="review-item">
+          <label>{{ getQuestionText(formStore.Q.SPECIFIC_COUNTRIES) }}:</label>
           <div class="tag-container" v-if="getCountryLabels().length > 0">
             <PvChip v-for="country in getCountryLabels()" :key="country" :label="country" />
           </div>
@@ -115,7 +154,7 @@
       </div>
 
       <div v-else class="edit-content">
-        <Step2 />
+        <Step2 ref="embeddedStep2Ref" />
       </div>
     </PvPanel>
 
@@ -148,17 +187,24 @@
 
       <div v-if="!editingStep3" class="review-content">
         <div
-          v-for="questionId in [162, 163, 164, 165]"
+          v-for="questionId in [
+            formStore.Q.ROI,
+            formStore.Q.INTEGRATION,
+            formStore.Q.DIFFERENTIATION,
+            formStore.Q.MEASURABLE_VALUE,
+          ]"
           :key="questionId"
           class="review-item question-review"
         >
           <label class="question-label">{{ getQuestionText(questionId) }}</label>
-          <span class="answer-text">{{ getAnswerText(questionId) }}</span>
+          <span class="answer-text">{{
+            getSingleAnswerLabel(questionId, formStore.formData.step3[questionId])
+          }}</span>
         </div>
       </div>
 
       <div v-else class="edit-content">
-        <Step3 />
+        <Step3 ref="embeddedStep3Ref" />
       </div>
     </PvPanel>
 
@@ -192,28 +238,44 @@
       <div v-if="!editingStep4" class="review-content">
         <div class="review-item">
           <label>Uploaded Files:</label>
-          <span v-if="formStore.formData.step4.uploadedFiles?.length > 0">
+          <span
+            v-if="
+              formStore.formData.step4.uploadedFiles &&
+              formStore.formData.step4.uploadedFiles.length > 0
+            "
+          >
             {{ formStore.formData.step4.uploadedFiles.length }} file(s) uploaded
           </span>
           <span v-else>No files uploaded</span>
-          <ul v-if="formStore.formData.step4.uploadedFiles?.length > 0" class="file-list">
+          <ul
+            v-if="
+              formStore.formData.step4.uploadedFiles &&
+              formStore.formData.step4.uploadedFiles.length > 0
+            "
+            class="file-list"
+          >
             <li v-for="(file, index) in formStore.formData.step4.uploadedFiles" :key="index">
               <i class="pi pi-file"></i> {{ file.source_name }}
             </li>
           </ul>
         </div>
         <div class="review-item">
-          <label>Video Link:</label>
-          <span>{{ formStore.formData.step4[166] || 'Not provided' }}</span>
+          <label>{{ getQuestionText(formStore.Q.VIDEO_URL) }}:</label>
+          <span>{{ formStore.formData.step4[formStore.Q.VIDEO_URL] || 'Not provided' }}</span>
         </div>
         <div class="review-item">
-          <label>References/Case Studies:</label>
-          <span>{{ getReferenceLabel() }}</span>
+          <label>{{ getQuestionText(formStore.Q.REFERENCES) }}:</label>
+          <span>{{
+            getSingleAnswerLabel(
+              formStore.Q.REFERENCES,
+              formStore.formData.step4[formStore.Q.REFERENCES],
+            )
+          }}</span>
         </div>
       </div>
 
       <div v-else class="edit-content">
-        <Step4 />
+        <Step4 ref="embeddedStep4Ref" />
       </div>
     </PvPanel>
 
@@ -235,17 +297,21 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue'
+<script setup lang="ts">
+import { ref, getCurrentInstance } from 'vue'
 import { useFormStore } from '@/stores/formStore'
 import Step1 from '@/components/molecules/Step1.vue'
 import Step2 from '@/components/molecules/Step2.vue'
 import Step3 from '@/components/molecules/Step3.vue'
 import Step4 from '@/components/molecules/Step4.vue'
 
-// Register components locally
-
 const formStore = useFormStore()
+
+// Refs for embedded step components
+const embeddedStep1Ref = ref<InstanceType<typeof Step1> | null>(null)
+const embeddedStep2Ref = ref<InstanceType<typeof Step2> | null>(null)
+const embeddedStep3Ref = ref<InstanceType<typeof Step3> | null>(null)
+const embeddedStep4Ref = ref<InstanceType<typeof Step4> | null>(null)
 
 // Edit state for each section
 const editingStep1 = ref(false)
@@ -253,82 +319,29 @@ const editingStep2 = ref(false)
 const editingStep3 = ref(false)
 const editingStep4 = ref(false)
 
-// Challenge mapping (answer_id to label)
-const challengeMap = {
-  264: 'Sustainable Solutions',
-  265: 'Smart FM & AI driven Solutions',
-  266: 'Soft Services Innovation',
-  267: 'Workplace Experience Enhancements',
-  268: 'Operational Efficiencies',
-}
-
-// Region mapping (answer_id to label)
-const regionMap = {
-  273: 'Americas',
-  274: 'APAC',
-  275: 'EMEA',
-  276: 'UK',
-  277: 'Ireland',
-}
-
-// Availability mapping (answer_id to label)
-const availabilityMap = {
-  269: 'Yes, globally available',
-  270: 'Available in select regions',
-  271: 'Not currently available outside specific countries',
-  272: 'Availability unknown',
-}
-
-// Reference mapping (answer_id to label)
-const referenceMap = {
-  298: 'Reference provided',
-  299: 'Case study provided',
-  300: 'Reference and case study provided',
-  301: 'Neither provided',
-}
-
-// Get challenge labels from answer IDs
-const getChallengeLabels = () => {
-  const answerIds = formStore.formData.step2[158] || []
-  return answerIds.map((id) => challengeMap[id] || 'Unknown').filter(Boolean)
-}
-
-// Get region labels from answer IDs
-const getRegionLabels = () => {
-  const answerIds = formStore.formData.step2[160] || []
-  return answerIds.map((id) => regionMap[id] || 'Unknown').filter(Boolean)
-}
-
-// Get country labels from country objects
-const getCountryLabels = () => {
-  const countries = formStore.formData.step2[161] || []
-  if (Array.isArray(countries)) {
-    return countries.map((country) => country.name || 'Unknown').filter(Boolean)
-  }
-  return []
-}
-
-// Get availability label
-const getAvailabilityLabel = () => {
-  const answerId = formStore.formData.step2[159]
-  return availabilityMap[answerId] || 'Not provided'
-}
-
-// Get reference label
-const getReferenceLabel = () => {
-  const answerId = formStore.formData.step4[167]
-  return referenceMap[answerId] || 'Not provided'
-}
-
 // Get question text by ID from store
-const getQuestionText = (questionId) => {
+const getQuestionText = (questionId: number): string => {
   const question = formStore.getQuestionById(questionId)
   return question?.question_text || 'Question not found'
 }
 
-// Get answer text by question ID
-const getAnswerText = (questionId) => {
-  const answerId = formStore.formData.step3[questionId]
+// Get answer label(s) for checkbox/multi-select questions (returns array)
+const getAnswerLabels = (questionId: number, answerIds: number[] | null): string[] => {
+  if (!answerIds || !Array.isArray(answerIds) || answerIds.length === 0) return []
+
+  const question = formStore.getQuestionById(questionId)
+  if (!question) return []
+
+  return answerIds
+    .map((id) => {
+      const option = question.question_answer_options.find((opt) => opt.answer_id === id)
+      return option?.answer_text || ''
+    })
+    .filter(Boolean)
+}
+
+// Get single answer label for radio/dropdown questions
+const getSingleAnswerLabel = (questionId: number, answerId: number | null): string => {
   if (!answerId) return 'Not provided'
 
   const question = formStore.getQuestionById(questionId)
@@ -338,14 +351,51 @@ const getAnswerText = (questionId) => {
   return option?.answer_text || 'Not provided'
 }
 
+// Get country labels from country objects
+const getCountryLabels = (): string[] => {
+  const countries = formStore.formData.step2[formStore.Q.SPECIFIC_COUNTRIES] || []
+  if (Array.isArray(countries)) {
+    return countries.map((country: any) => country.name || 'Unknown').filter(Boolean)
+  }
+  return []
+}
+
+// Check if regions should be shown (based on availability selection)
+const shouldShowRegions = (): boolean => {
+  const availabilityQuestion = formStore.getQuestionById(formStore.Q.SOLUTION_AVAILABILITY)
+  if (!availabilityQuestion) return false
+
+  const selectRegionsAnswer = availabilityQuestion.question_answer_options.find((opt) =>
+    opt.answer_text.toLowerCase().includes('select regions'),
+  )
+
+  return (
+    formStore.formData.step2[formStore.Q.SOLUTION_AVAILABILITY] === selectRegionsAnswer?.answer_id
+  )
+}
+
+// Check if countries should be shown (based on availability selection)
+const shouldShowCountries = (): boolean => {
+  const availabilityQuestion = formStore.getQuestionById(formStore.Q.SOLUTION_AVAILABILITY)
+  if (!availabilityQuestion) return false
+
+  const specificCountriesAnswer = availabilityQuestion.question_answer_options.find((opt) =>
+    opt.answer_text.toLowerCase().includes('specific countries'),
+  )
+
+  return (
+    formStore.formData.step2[formStore.Q.SOLUTION_AVAILABILITY] ===
+    specificCountriesAnswer?.answer_id
+  )
+}
+
 // Toggle edit mode for a step
-const toggleEdit = (step) => {
+const toggleEdit = (step: number) => {
   editingStep1.value = false
   editingStep2.value = false
   editingStep3.value = false
   editingStep4.value = false
 
-  // Open the selected step for editing
   switch (step) {
     case 1:
       editingStep1.value = true
@@ -362,24 +412,91 @@ const toggleEdit = (step) => {
   }
 }
 
-// Save function - just closes the edit panel
-const saveStep = (step) => {
-  // Data is already saved to store via watch in each step component
+// Save function - validate before closing the edit panel
+const saveStep = async (step: number) => {
+  let isValid = true
+
+  // Validate the embedded step based on which one is open
   switch (step) {
     case 1:
-      editingStep1.value = false
+      if (embeddedStep1Ref.value && typeof embeddedStep1Ref.value.validateAll === 'function') {
+        isValid = await embeddedStep1Ref.value.validateAll()
+      }
+      if (isValid) editingStep1.value = false
       break
     case 2:
-      editingStep2.value = false
+      if (embeddedStep2Ref.value && typeof embeddedStep2Ref.value.validateAll === 'function') {
+        isValid = await embeddedStep2Ref.value.validateAll()
+      }
+      if (isValid) editingStep2.value = false
       break
     case 3:
-      editingStep3.value = false
+      if (embeddedStep3Ref.value && typeof embeddedStep3Ref.value.validateAll === 'function') {
+        isValid = await embeddedStep3Ref.value.validateAll()
+      }
+      if (isValid) editingStep3.value = false
       break
     case 4:
-      editingStep4.value = false
+      if (embeddedStep4Ref.value && typeof embeddedStep4Ref.value.validateAll === 'function') {
+        isValid = await embeddedStep4Ref.value.validateAll()
+      }
+      if (isValid) editingStep4.value = false
       break
   }
+
+  if (!isValid) {
+    console.log(`Step ${step} validation failed in review`)
+  }
 }
+
+// Validate - check if any edit panels are open
+const validateAll = async () => {
+  // If any edit panel is open, validate that step first
+  if (
+    editingStep1.value &&
+    embeddedStep1Ref.value &&
+    typeof embeddedStep1Ref.value.validateAll === 'function'
+  ) {
+    const isValid = await embeddedStep1Ref.value.validateAll()
+    if (!isValid) return false
+  }
+
+  if (
+    editingStep2.value &&
+    embeddedStep2Ref.value &&
+    typeof embeddedStep2Ref.value.validateAll === 'function'
+  ) {
+    const isValid = await embeddedStep2Ref.value.validateAll()
+    if (!isValid) return false
+  }
+
+  if (
+    editingStep3.value &&
+    embeddedStep3Ref.value &&
+    typeof embeddedStep3Ref.value.validateAll === 'function'
+  ) {
+    const isValid = await embeddedStep3Ref.value.validateAll()
+    if (!isValid) return false
+  }
+
+  if (
+    editingStep4.value &&
+    embeddedStep4Ref.value &&
+    typeof embeddedStep4Ref.value.validateAll === 'function'
+  ) {
+    const isValid = await embeddedStep4Ref.value.validateAll()
+    if (!isValid) return false
+  }
+
+  // Step 5 is just a review step, no validation needed if no panels are open
+  return true
+}
+
+// Expose validation methods for Stepper
+defineExpose({
+  validateAll,
+  isValid: async () => true,
+})
 </script>
 
 <style scoped>
@@ -575,7 +692,6 @@ const saveStep = (step) => {
   display: none;
 }
 
-/* Smooth scrollbar styling */
 .review-container::-webkit-scrollbar {
   width: 8px;
 }
@@ -594,7 +710,6 @@ const saveStep = (step) => {
   background: #9ca3af;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .section-title {
     font-size: 1rem;

@@ -13,7 +13,7 @@
       <Step4 ref="step-4Ref" />
     </template>
     <template #step-5>
-      <Step5 />
+      <Step5 ref="step-5Ref" />
     </template>
     <template #step-6>
       <Step6 ref="step6Ref" @update:is-submitted="handleSubmissionUpdate" />

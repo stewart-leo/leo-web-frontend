@@ -138,8 +138,14 @@ const getStepComponentRef = (stepValue: string): StepComponent | null => {
 
 // Handle Next button click
 const handleNext = async (step: Step, index: number) => {
-  // Validate Step 1, Step 2, Step 3, or Step 4
-  if (step.value === '1' || step.value === '2' || step.value === '3' || step.value === '4') {
+  // Validate Step 1, Step 2, Step 3, Step 4, or Step 5
+  if (
+    step.value === '1' ||
+    step.value === '2' ||
+    step.value === '3' ||
+    step.value === '4' ||
+    step.value === '5'
+  ) {
     const stepComponent = getStepComponentRef(step.value)
 
     if (stepComponent && typeof stepComponent.validateAll === 'function') {
