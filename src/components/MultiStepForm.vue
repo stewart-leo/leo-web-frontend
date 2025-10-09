@@ -4,7 +4,7 @@
       <Step1 ref="step-1Ref" />
     </template>
     <template #step-2>
-      <Step2 />
+      <Step2 ref="step-2Ref" />
     </template>
     <template #step-3>
       <Step3 />

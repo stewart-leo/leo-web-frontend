@@ -1,13 +1,24 @@
 <template>
   <PvPanel>
     <div class="form-container">
-      <PvFloatLabel>
-        <PvInputText id="title" v-model="title" />
-        <label for="title">Innovation Title</label>
-      </PvFloatLabel>
+      <div>
+        <PvFloatLabel>
+          <PvInputText
+            id="title"
+            v-model="title"
+            :invalid="!!errors.title"
+            @blur="validateField('title')"
+          />
+          <label for="title">Innovation Title</label>
+        </PvFloatLabel>
+        <small v-if="errors.title" class="error-text">
+          {{ errors.title }}
+        </small>
+      </div>
+
       <div class="description-field">
         <div class="field-label-with-tooltip">
-          <label for="descripton">Short description of your innovation submission</label>
+          <label for="description">Short description of your innovation submission</label>
           <i
             class="pi pi-info-circle info-icon"
             v-tooltip.right="{
@@ -16,97 +27,122 @@
             }"
           ></i>
         </div>
-        <PvTextArea id="descripton" v-model="description" :autoResize="true" rows="3" />
+        <PvTextArea
+          id="description"
+          v-model="description"
+          :autoResize="true"
+          rows="3"
+          :invalid="!!errors.description"
+          @blur="validateField('description')"
+        />
+        <small v-if="errors.description" class="error-text">
+          {{ errors.description }}
+        </small>
       </div>
 
-      <PvFieldset legend="What client challenge is your innovation solving?">
-        <div
-          v-for="challenge of challenges"
-          :key="challenge.id"
-          class="flex align-items-center challenge-item"
-        >
-          <PvCheckbox
-            v-model="selectedChallenges"
-            :inputId="challenge.id"
-            name="challenge"
-            :value="challenge.value"
-          />
-          <label :for="challenge.id" class="ml-2 challenge-label">
-            {{ challenge.label }}
-            <i
-              class="pi pi-info-circle info-icon"
-              v-tooltip.right="{
-                value: challenge.tooltip,
-                escape: false,
-              }"
-            ></i>
-          </label>
-        </div>
-      </PvFieldset>
+      <div>
+        <PvFieldset legend="What client challenge is your innovation solving?">
+          <div
+            v-for="challenge of challenges"
+            :key="challenge.id"
+            class="flex align-items-center challenge-item"
+          >
+            <PvCheckbox
+              v-model="selectedChallenges"
+              :inputId="challenge.id"
+              name="challenge"
+              :value="challenge.value"
+            />
+            <label :for="challenge.id" class="ml-2 challenge-label">
+              {{ challenge.label }}
+              <i
+                class="pi pi-info-circle info-icon"
+                v-tooltip.right="{
+                  value: challenge.tooltip,
+                  escape: false,
+                }"
+              ></i>
+            </label>
+          </div>
+        </PvFieldset>
+        <small v-if="errors.selectedChallenges" class="error-text">
+          {{ errors.selectedChallenges }}
+        </small>
+      </div>
 
-      <PvFieldset legend="Is the proposed solution available in multiple countries?">
-        <div
-          v-for="option of availabilityOptions"
-          :key="option.value"
-          class="flex align-items-center"
-        >
-          <PvRadioButton
-            v-model="selectedAvailability"
-            :inputId="`availability_${option.value}`"
-            name="availability"
-            :value="option.value"
-          />
-          <label :for="`availability_${option.value}`" class="ml-2">{{ option.label }}</label>
-        </div>
-      </PvFieldset>
+      <div>
+        <PvFieldset legend="Is the proposed solution available in multiple countries?">
+          <div
+            v-for="option of availabilityOptions"
+            :key="option.value"
+            class="flex align-items-center"
+          >
+            <PvRadioButton
+              v-model="selectedAvailability"
+              :inputId="`availability_${option.value}`"
+              name="availability"
+              :value="option.value"
+            />
+            <label :for="`availability_${option.value}`" class="ml-2">{{ option.label }}</label>
+          </div>
+        </PvFieldset>
+        <small v-if="errors.selectedAvailability" class="error-text">
+          {{ errors.selectedAvailability }}
+        </small>
+      </div>
 
-      <PvFieldset
-        v-if="selectedAvailability === 270"
-        legend="What is the regional application of this innovation?"
-      >
-        <div v-for="region of regionOptions" :key="region.value" class="flex align-items-center">
-          <PvCheckbox
-            v-model="selectedRegions"
-            :inputId="`region_${region.value}`"
-            name="region"
-            :value="region.value"
-          />
-          <label :for="`region_${region.value}`" class="ml-2">{{ region.label }}</label>
-        </div>
-      </PvFieldset>
+      <div v-if="selectedAvailability === 270">
+        <PvFieldset legend="What is the regional application of this innovation?">
+          <div v-for="region of regionOptions" :key="region.value" class="flex align-items-center">
+            <PvCheckbox
+              v-model="selectedRegions"
+              :inputId="`region_${region.value}`"
+              name="region"
+              :value="region.value"
+            />
+            <label :for="`region_${region.value}`" class="ml-2">{{ region.label }}</label>
+          </div>
+        </PvFieldset>
+        <small v-if="errors.selectedRegions" class="error-text">
+          {{ errors.selectedRegions }}
+        </small>
+      </div>
 
-      <PvFloatLabel v-if="selectedAvailability === 271" class="w-full md:w-80">
-        <PvMultiSelect
-          id="countries"
-          v-model="selectedCountries"
-          :options="countryOptions"
-          display="chip"
-          optionLabel="name"
-          filter
-          :maxSelectedLabels="5"
-          :selectionLimit="5"
-          class="w-full"
-        />
-        <label for="countries">Please list specific countries your innovation is applicable</label>
-      </PvFloatLabel>
+      <div v-if="selectedAvailability === 271">
+        <PvFloatLabel class="w-full md:w-80">
+          <PvMultiSelect
+            id="countries"
+            v-model="selectedCountries"
+            :options="countryOptions"
+            display="chip"
+            optionLabel="name"
+            filter
+            :maxSelectedLabels="5"
+            :selectionLimit="5"
+            class="w-full"
+            :invalid="!!errors.selectedCountries"
+            @blur="validateField('selectedCountries')"
+          />
+          <label for="countries"
+            >Please list specific countries your innovation is applicable</label
+          >
+        </PvFloatLabel>
+        <small v-if="errors.selectedCountries" class="error-text">
+          {{ errors.selectedCountries }}
+        </small>
+      </div>
     </div>
   </PvPanel>
 </template>
 
-<script setup>
-import { ref, watch, onMounted } from 'vue'
+<script setup lang="ts">
+import { watch, computed } from 'vue'
+import { useForm, useField } from 'vee-validate'
+import { object, string, array, number } from 'yup'
 import { useFormStore } from '@/stores/formStore'
 import countries from '@/assets/json/countries.json'
 
 const formStore = useFormStore()
-
-// Form fields
-const title = ref('')
-const description = ref('')
-const selectedChallenges = ref([])
-const selectedAvailability = ref(null)
-const selectedRegions = ref([])
-const selectedCountries = ref([])
 
 const descriptionTooltip = `<div style="line-height: 1.6;">
   <strong>Tip:</strong> Please keep your description short and concise. You may want to consider including the following:
@@ -204,17 +240,69 @@ const regionOptions = [
 // Country options for MultiSelect
 const countryOptions = countries.map((country) => ({ name: country.name }))
 
-// Load saved data from store on mount
-onMounted(() => {
-  title.value = formStore.formData.step2[156] || ''
-  description.value = formStore.formData.step2[157] || ''
-  selectedChallenges.value = formStore.formData.step2[158] || []
-  selectedAvailability.value = formStore.formData.step2[159] || null
-  selectedRegions.value = formStore.formData.step2[160] || []
-  selectedCountries.value = formStore.formData.step2[161] || []
+// Initialize VeeValidate form first with basic schema
+const { errors, validate, validateField, values } = useForm({
+  initialValues: {
+    title: formStore.formData.step2[156] || '',
+    description: formStore.formData.step2[157] || '',
+    selectedChallenges: formStore.formData.step2[158] || [],
+    selectedAvailability: formStore.formData.step2[159] || null,
+    selectedRegions: formStore.formData.step2[160] || [],
+    selectedCountries: formStore.formData.step2[161] || [],
+  },
 })
 
-// Watch and save to store
+// Create fields
+const { value: title } = useField<string>(
+  'title',
+  string().required('Innovation Title is required').trim(),
+)
+const { value: description } = useField<string>(
+  'description',
+  string().required('Description is required').trim(),
+)
+const { value: selectedChallenges } = useField<number[]>(
+  'selectedChallenges',
+  array()
+    .of(number())
+    .min(1, 'Please select at least one challenge')
+    .required('Please select at least one challenge'),
+)
+const { value: selectedAvailability } = useField<number | null>(
+  'selectedAvailability',
+  number()
+    .required('Please select an availability option')
+    .typeError('Please select an availability option'),
+)
+
+// Conditional fields with dynamic validation
+const { value: selectedRegions } = useField<number[]>(
+  'selectedRegions',
+  computed(() => {
+    if (selectedAvailability.value === 270) {
+      return array()
+        .of(number())
+        .min(1, 'Please select at least one region')
+        .required('Please select at least one region')
+    }
+    return array().of(number())
+  }),
+)
+
+const { value: selectedCountries } = useField<any[]>(
+  'selectedCountries',
+  computed(() => {
+    if (selectedAvailability.value === 271) {
+      return array()
+        .of(object())
+        .min(1, 'Please select at least one country')
+        .required('Please select at least one country')
+    }
+    return array().of(object())
+  }),
+)
+
+// Watch for changes and update store
 watch(
   [
     title,
@@ -225,12 +313,12 @@ watch(
     selectedCountries,
   ],
   () => {
-    formStore.updateStep2(156, title.value) // Innovation title
-    formStore.updateStep2(157, description.value) // Short description
-    formStore.updateStep2(158, selectedChallenges.value) // Client challenge (checkbox - array)
-    formStore.updateStep2(159, selectedAvailability.value) // Multiple countries (radio - single value)
-    formStore.updateStep2(160, selectedRegions.value) // Regional application (checkbox - array)
-    formStore.updateStep2(161, selectedCountries.value) // Specific countries (multiselect - array)
+    formStore.updateStep2(156, title.value)
+    formStore.updateStep2(157, description.value)
+    formStore.updateStep2(158, selectedChallenges.value)
+    formStore.updateStep2(159, selectedAvailability.value)
+    formStore.updateStep2(160, selectedRegions.value)
+    formStore.updateStep2(161, selectedCountries.value)
   },
   { deep: true },
 )
@@ -246,6 +334,21 @@ watch(selectedAvailability, (newValue) => {
     formStore.updateStep2(161, [])
   }
 })
+
+// Validate all fields - called by Stepper before proceeding
+const validateAll = async () => {
+  const result = await validate()
+  return result.valid
+}
+
+// Expose validation methods for Stepper
+defineExpose({
+  validateAll,
+  isValid: async () => {
+    const result = await validate()
+    return result.valid
+  },
+})
 </script>
 
 <style scoped>
@@ -259,7 +362,8 @@ watch(selectedAvailability, (newValue) => {
   padding: 1rem;
 }
 :deep(.p-inputtext),
-:deep(.p-autocomplete) {
+:deep(.p-autocomplete),
+:deep(.p-textarea) {
   width: 100%;
 }
 .p-checkbox,
@@ -304,6 +408,28 @@ watch(selectedAvailability, (newValue) => {
 }
 .info-icon:hover {
   color: #10b981;
+}
+
+.error-text {
+  display: block;
+  color: #dc2626;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  margin-left: 0.25rem;
+}
+
+/* Invalid field styling */
+:deep(.p-inputtext.p-invalid),
+:deep(.p-textarea.p-invalid),
+:deep(.p-multiselect.p-invalid) {
+  border-color: #dc2626;
+}
+
+:deep(.p-inputtext.p-invalid:focus),
+:deep(.p-textarea.p-invalid:focus),
+:deep(.p-multiselect.p-invalid:focus) {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.2);
 }
 </style>
 

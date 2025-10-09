@@ -76,9 +76,20 @@
 <script setup lang="ts">
 import { ref, computed, getCurrentInstance } from 'vue'
 
+interface Step {
+  value: string
+  label: string
+  description?: string
+}
+
+interface StepComponent {
+  validateAll?: () => Promise<boolean>
+  isValid?: () => Promise<boolean>
+}
+
 const props = defineProps({
   steps: {
-    type: Array,
+    type: Array as () => Step[],
     required: true,
   },
   initialStep: {
@@ -101,7 +112,7 @@ const activeStep = ref(props.initialStep)
 const instance = getCurrentInstance()
 
 const activeStepIndex = computed(() =>
-  props.steps.findIndex((step: any) => step.value === activeStep.value),
+  props.steps.findIndex((step) => step.value === activeStep.value),
 )
 
 const progressWidth = computed(() => {
@@ -110,7 +121,7 @@ const progressWidth = computed(() => {
 })
 
 // Get step component ref
-const getStepComponentRef = (stepValue: string) => {
+const getStepComponentRef = (stepValue: string): StepComponent | null => {
   const slotName = `step-${stepValue}`
   const parentComponent = instance?.parent
 
@@ -119,23 +130,23 @@ const getStepComponentRef = (stepValue: string) => {
   // Try to find the component in the parent's refs
   const refs = parentComponent.refs
   if (refs && refs[`${slotName}Ref`]) {
-    return refs[`${slotName}Ref`]
+    return refs[`${slotName}Ref`] as StepComponent
   }
 
   return null
 }
 
 // Handle Next button click
-const handleNext = async (step: any, index: number) => {
-  // Only validate Step 1
-  if (step.value === '1') {
-    const stepComponent = getStepComponentRef('1')
+const handleNext = async (step: Step, index: number) => {
+  // Validate Step 1 or Step 2
+  if (step.value === '1' || step.value === '2') {
+    const stepComponent = getStepComponentRef(step.value)
 
     if (stepComponent && typeof stepComponent.validateAll === 'function') {
       const isValid = await stepComponent.validateAll()
 
       if (!isValid) {
-        console.log('Step 1 validation failed')
+        console.log(`Step ${step.value} validation failed`)
         return
       }
     }
@@ -146,21 +157,25 @@ const handleNext = async (step: any, index: number) => {
 }
 
 // Handle Back button click
-const handleBack = (step: any, index: number) => {
+const handleBack = (step: Step, index: number) => {
   setActiveStep(props.steps[index - 1].value)
 }
 
 // Handle step indicator click
 const handleStepClick = async (stepValue: string) => {
-  // If trying to go forward from Step 1, validate first
-  if (activeStep.value === '1' && parseInt(stepValue) > 1) {
-    const stepComponent = getStepComponentRef('1')
+  const currentStepValue = activeStep.value
+  const targetStepValue = parseInt(stepValue)
+  const currentStepNum = parseInt(currentStepValue)
+
+  // If trying to go forward, validate current step if it's Step 1 or Step 2
+  if (targetStepValue > currentStepNum && (currentStepValue === '1' || currentStepValue === '2')) {
+    const stepComponent = getStepComponentRef(currentStepValue)
 
     if (stepComponent && typeof stepComponent.validateAll === 'function') {
       const isValid = await stepComponent.validateAll()
 
       if (!isValid) {
-        console.log('Step 1 validation failed')
+        console.log(`Step ${currentStepValue} validation failed`)
         return
       }
     }
