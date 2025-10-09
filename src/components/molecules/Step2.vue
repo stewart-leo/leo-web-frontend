@@ -152,7 +152,6 @@ const descriptionTooltip = `<div style="line-height: 1.6;">
   </ul>
 </div>`
 
-// Map challenges to answer_id from API (question_id: 158)
 const challenges = [
   {
     id: 'smart-fm-ai',
@@ -220,7 +219,6 @@ const challenges = [
   },
 ]
 
-// Map availability options to answer_id from API (question_id: 159)
 const availabilityOptions = [
   { value: 269, label: 'Yes, globally available' },
   { value: 270, label: 'Available in select regions' },
@@ -228,7 +226,6 @@ const availabilityOptions = [
   { value: 272, label: 'Availability unknown' },
 ]
 
-// Map regions to answer_id from API (question_id: 160)
 const regionOptions = [
   { value: 273, label: 'Americas' },
   { value: 274, label: 'APAC' },
@@ -237,11 +234,9 @@ const regionOptions = [
   { value: 277, label: 'Ireland' },
 ]
 
-// Country options for MultiSelect
 const countryOptions = countries.map((country) => ({ name: country.name }))
 
-// Initialize VeeValidate form first with basic schema
-const { errors, validate, validateField, values } = useForm({
+const { errors, validate, validateField, setFieldError } = useForm({
   initialValues: {
     title: formStore.formData.step2[156] || '',
     description: formStore.formData.step2[157] || '',
@@ -252,7 +247,6 @@ const { errors, validate, validateField, values } = useForm({
   },
 })
 
-// Create fields
 const { value: title } = useField<string>(
   'title',
   string().required('Innovation Title is required').trim(),
@@ -274,35 +268,9 @@ const { value: selectedAvailability } = useField<number | null>(
     .required('Please select an availability option')
     .typeError('Please select an availability option'),
 )
+const { value: selectedRegions } = useField<number[]>('selectedRegions')
+const { value: selectedCountries } = useField<any[]>('selectedCountries')
 
-// Conditional fields with dynamic validation
-const { value: selectedRegions } = useField<number[]>(
-  'selectedRegions',
-  computed(() => {
-    if (selectedAvailability.value === 270) {
-      return array()
-        .of(number())
-        .min(1, 'Please select at least one region')
-        .required('Please select at least one region')
-    }
-    return array().of(number())
-  }),
-)
-
-const { value: selectedCountries } = useField<any[]>(
-  'selectedCountries',
-  computed(() => {
-    if (selectedAvailability.value === 271) {
-      return array()
-        .of(object())
-        .min(1, 'Please select at least one country')
-        .required('Please select at least one country')
-    }
-    return array().of(object())
-  }),
-)
-
-// Watch for changes and update store
 watch(
   [
     title,
@@ -323,25 +291,50 @@ watch(
   { deep: true },
 )
 
-// Clear dependent fields when availability changes
+watch(selectedRegions, (newValue) => {
+  if (newValue && newValue.length > 0) {
+    setFieldError('selectedRegions', undefined)
+  }
+})
+
+watch(selectedCountries, (newValue) => {
+  if (newValue && newValue.length > 0) {
+    setFieldError('selectedCountries', undefined)
+  }
+})
+
 watch(selectedAvailability, (newValue) => {
   if (newValue !== 270) {
     selectedRegions.value = []
     formStore.updateStep2(160, [])
+    setFieldError('selectedRegions', undefined)
   }
   if (newValue !== 271) {
     selectedCountries.value = []
     formStore.updateStep2(161, [])
+    setFieldError('selectedCountries', undefined)
   }
 })
 
-// Validate all fields - called by Stepper before proceeding
 const validateAll = async () => {
+  if (selectedAvailability.value === 270) {
+    if (!selectedRegions.value || selectedRegions.value.length === 0) {
+      setFieldError('selectedRegions', 'Please select at least one region')
+      return false
+    }
+  }
+
+  if (selectedAvailability.value === 271) {
+    if (!selectedCountries.value || selectedCountries.value.length === 0) {
+      setFieldError('selectedCountries', 'Please select at least one country')
+      return false
+    }
+  }
+
   const result = await validate()
   return result.valid
 }
 
-// Expose validation methods for Stepper
 defineExpose({
   validateAll,
   isValid: async () => {
@@ -418,7 +411,6 @@ defineExpose({
   margin-left: 0.25rem;
 }
 
-/* Invalid field styling */
 :deep(.p-inputtext.p-invalid),
 :deep(.p-textarea.p-invalid),
 :deep(.p-multiselect.p-invalid) {
@@ -434,7 +426,6 @@ defineExpose({
 </style>
 
 <style>
-/* Global styles for PrimeVue tooltips - must be unscoped */
 .p-tooltip {
   max-width: 20rem !important;
   min-width: 20rem !important;
