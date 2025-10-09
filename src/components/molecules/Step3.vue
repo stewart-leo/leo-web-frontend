@@ -21,24 +21,21 @@
             </div>
           </div>
         </PvFieldset>
+        <small v-if="errors[questionKey]" class="error-text">
+          {{ errors[questionKey] }}
+        </small>
       </div>
     </div>
   </PvPanel>
 </template>
 
-<script setup>
-import { ref, watch, onMounted } from 'vue'
+<script setup lang="ts">
+import { watch } from 'vue'
+import { useForm, useField } from 'vee-validate'
+import { number } from 'yup'
 import { useFormStore } from '@/stores/formStore'
 
 const formStore = useFormStore()
-
-// Create reactive refs for each question's selected answer
-const selectedAnswers = ref({
-  question1: null, // question_id: 162
-  question2: null, // question_id: 163
-  question3: null, // question_id: 164
-  question4: null, // question_id: 165
-})
 
 // Questions mapped to API response (question_id: 162-165)
 const questions = {
@@ -87,25 +84,82 @@ const questions = {
   },
 }
 
-// Load saved data from store on mount
-onMounted(() => {
-  selectedAnswers.value.question1 = formStore.formData.step3[162] || null
-  selectedAnswers.value.question2 = formStore.formData.step3[163] || null
-  selectedAnswers.value.question3 = formStore.formData.step3[164] || null
-  selectedAnswers.value.question4 = formStore.formData.step3[165] || null
+// Initialize VeeValidate form
+const { errors, validate, setFieldError } = useForm({
+  initialValues: {
+    question1: formStore.formData.step3[162] || null,
+    question2: formStore.formData.step3[163] || null,
+    question3: formStore.formData.step3[164] || null,
+    question4: formStore.formData.step3[165] || null,
+  },
+  validateOnMount: false,
 })
 
-// Watch and save to store
-watch(
-  selectedAnswers,
-  (newValues) => {
-    formStore.updateStep3(162, newValues.question1) // ROI question
-    formStore.updateStep3(163, newValues.question2) // Integration question
-    formStore.updateStep3(164, newValues.question3) // Differentiation question
-    formStore.updateStep3(165, newValues.question4) // Value creation question
-  },
-  { deep: true },
+// Create fields with validation
+const { value: question1 } = useField<number | null>(
+  'question1',
+  number().required('Please select an answer').typeError('Please select an answer'),
+  { validateOnValueUpdate: false },
 )
+const { value: question2 } = useField<number | null>(
+  'question2',
+  number().required('Please select an answer').typeError('Please select an answer'),
+  { validateOnValueUpdate: false },
+)
+const { value: question3 } = useField<number | null>(
+  'question3',
+  number().required('Please select an answer').typeError('Please select an answer'),
+  { validateOnValueUpdate: false },
+)
+const { value: question4 } = useField<number | null>(
+  'question4',
+  number().required('Please select an answer').typeError('Please select an answer'),
+  { validateOnValueUpdate: false },
+)
+
+// Create a reactive object for v-model binding
+const selectedAnswers = {
+  question1,
+  question2,
+  question3,
+  question4,
+}
+
+// Watch and save to store, and clear errors when value changes
+watch(question1, (newValue) => {
+  formStore.updateStep3(162, newValue)
+  if (newValue !== null) setFieldError('question1', undefined)
+})
+
+watch(question2, (newValue) => {
+  formStore.updateStep3(163, newValue)
+  if (newValue !== null) setFieldError('question2', undefined)
+})
+
+watch(question3, (newValue) => {
+  formStore.updateStep3(164, newValue)
+  if (newValue !== null) setFieldError('question3', undefined)
+})
+
+watch(question4, (newValue) => {
+  formStore.updateStep3(165, newValue)
+  if (newValue !== null) setFieldError('question4', undefined)
+})
+
+// Validate all fields - called by Stepper before proceeding
+const validateAll = async () => {
+  const result = await validate()
+  return result.valid
+}
+
+// Expose validation methods for Stepper
+defineExpose({
+  validateAll,
+  isValid: async () => {
+    const result = await validate()
+    return result.valid
+  },
+})
 </script>
 
 <style scoped>
@@ -141,5 +195,13 @@ watch(
 .radio-label {
   margin-left: 0.5rem;
   line-height: 1.5;
+}
+
+.error-text {
+  display: block;
+  color: #dc2626;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  margin-left: 0.25rem;
 }
 </style>
