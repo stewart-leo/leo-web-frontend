@@ -32,7 +32,69 @@ export interface FormData {
   }
 }
 
+// Environment-specific question ID mappings
+const QUESTION_ID_MAP = {
+  dev: {
+    INNOVATION_TITLE: 156,
+    SHORT_DESCRIPTION: 157,
+    CLIENT_CHALLENGE: 158,
+    SOLUTION_AVAILABILITY: 159,
+    REGIONAL_APPLICATION: 160,
+    SPECIFIC_COUNTRIES: 161,
+    ROI: 162,
+    INTEGRATION: 163,
+    DIFFERENTIATION: 164,
+    MEASURABLE_VALUE: 165,
+    VIDEO_URL: 166,
+    REFERENCES: 167,
+  },
+  staging: {
+    INNOVATION_TITLE: 165,
+    SHORT_DESCRIPTION: 166,
+    CLIENT_CHALLENGE: 167,
+    SOLUTION_AVAILABILITY: 168,
+    REGIONAL_APPLICATION: 169,
+    SPECIFIC_COUNTRIES: 170,
+    ROI: 171,
+    INTEGRATION: 172,
+    DIFFERENTIATION: 173,
+    MEASURABLE_VALUE: 174,
+    VIDEO_URL: 175,
+    REFERENCES: 176,
+  },
+  production: {
+    INNOVATION_TITLE: 156,
+    SHORT_DESCRIPTION: 157,
+    CLIENT_CHALLENGE: 158,
+    SOLUTION_AVAILABILITY: 159,
+    REGIONAL_APPLICATION: 160,
+    SPECIFIC_COUNTRIES: 161,
+    ROI: 162,
+    INTEGRATION: 163,
+    DIFFERENTIATION: 164,
+    MEASURABLE_VALUE: 165,
+    VIDEO_URL: 166,
+    REFERENCES: 167,
+  },
+}
+
+// Determine current environment
+const getCurrentEnvironment = (): 'dev' | 'staging' | 'production' => {
+  const apiUrl = import.meta.env.VITE_API_URL || ''
+  console.log('API URL:', apiUrl)
+  if (apiUrl.includes('127.0.0.1') || apiUrl.includes('localhost') || apiUrl.includes('dev'))
+    return 'dev'
+  if (apiUrl.includes('staging')) return 'staging'
+  return 'production'
+}
+
 export const useFormStore = defineStore('form', () => {
+  // Get environment-specific question IDs
+  const environment = getCurrentEnvironment()
+  const Q = QUESTION_ID_MAP[environment]
+
+  console.log(`Form Store initialized for environment: ${environment}`)
+  console.log('Question ID mapping:', Q)
   // All questions from backend
   const allQuestions = ref<Question[]>([])
   const questionsLoading = ref(false)
@@ -53,15 +115,21 @@ export const useFormStore = defineStore('form', () => {
 
   // Computed: Get questions for each step based on question_id ranges
   const step2Questions = computed(() => {
-    return allQuestions.value.filter((q) => q.question_id >= 156 && q.question_id <= 161)
+    return allQuestions.value.filter(
+      (q) => q.question_id >= Q.INNOVATION_TITLE && q.question_id <= Q.SPECIFIC_COUNTRIES,
+    )
   })
 
   const step3Questions = computed(() => {
-    return allQuestions.value.filter((q) => q.question_id >= 162 && q.question_id <= 165)
+    return allQuestions.value.filter(
+      (q) => q.question_id >= Q.ROI && q.question_id <= Q.MEASURABLE_VALUE,
+    )
   })
 
   const step4Questions = computed(() => {
-    return allQuestions.value.filter((q) => q.question_id >= 166 && q.question_id <= 167)
+    return allQuestions.value.filter(
+      (q) => q.question_id >= Q.VIDEO_URL && q.question_id <= Q.REFERENCES,
+    )
   })
 
   // Fetch questions from backend
@@ -147,75 +215,93 @@ export const useFormStore = defineStore('form', () => {
       },
     }
 
-    // Step 2 questions (156-161)
-    // Q156: Innovation title (type 4 - text) - Always include
+    // Step 2 questions
+    // Q: Innovation title (type 4 - text) - Always include
     payload.questions.push({
-      question_id: 156,
+      question_id: Q.INNOVATION_TITLE,
       question_type_id: 4,
       answer_id: null,
-      answer_text: formData.value.step2[156] || '',
+      answer_text: formData.value.step2[Q.INNOVATION_TITLE] || '',
     })
 
-    // Q157: Short description (type 4 - text) - Always include
+    // Q: Short description (type 4 - text) - Always include
     payload.questions.push({
-      question_id: 157,
+      question_id: Q.SHORT_DESCRIPTION,
       question_type_id: 4,
       answer_id: null,
-      answer_text: formData.value.step2[157] || '',
+      answer_text: formData.value.step2[Q.SHORT_DESCRIPTION] || '',
     })
 
-    // Q158: Client challenges (type 2 - checkbox/multi-select) - Always include
+    // Q: Client challenges (type 2 - checkbox/multi-select) - Always include
     const challenges =
-      formData.value.step2[158] && Array.isArray(formData.value.step2[158])
-        ? formData.value.step2[158]
+      formData.value.step2[Q.CLIENT_CHALLENGE] &&
+      Array.isArray(formData.value.step2[Q.CLIENT_CHALLENGE])
+        ? formData.value.step2[Q.CLIENT_CHALLENGE]
         : []
     payload.questions.push({
-      question_id: 158,
+      question_id: Q.CLIENT_CHALLENGE,
       question_type_id: 2,
       answer_id: challenges,
-      answer_text: challenges.length > 0 ? getAnswerText(158, challenges) : [],
+      answer_text: challenges.length > 0 ? getAnswerText(Q.CLIENT_CHALLENGE, challenges) : [],
     })
 
-    // Q159: Solution availability (type 3 - dropdown/radio) - Only include if answered
-    if (formData.value.step2[159]) {
+    // Q: Solution availability (type 3 - dropdown/radio) - Only include if answered
+    if (formData.value.step2[Q.SOLUTION_AVAILABILITY]) {
       payload.questions.push({
-        question_id: 159,
+        question_id: Q.SOLUTION_AVAILABILITY,
         question_type_id: 3,
-        answer_id: formData.value.step2[159],
-        answer_text: getAnswerText(159, formData.value.step2[159]),
+        answer_id: formData.value.step2[Q.SOLUTION_AVAILABILITY],
+        answer_text: getAnswerText(
+          Q.SOLUTION_AVAILABILITY,
+          formData.value.step2[Q.SOLUTION_AVAILABILITY],
+        ),
       })
     }
 
-    // Q160: Regional application (type 2 - checkbox) - Only include if Q159 = 270
+    // Q: Regional application (type 2 - checkbox) - Only include if Q.SOLUTION_AVAILABILITY = 270 (or staging equivalent)
     const regions =
-      formData.value.step2[160] && Array.isArray(formData.value.step2[160])
-        ? formData.value.step2[160]
+      formData.value.step2[Q.REGIONAL_APPLICATION] &&
+      Array.isArray(formData.value.step2[Q.REGIONAL_APPLICATION])
+        ? formData.value.step2[Q.REGIONAL_APPLICATION]
         : []
-    if (formData.value.step2[159] === 270) {
+
+    // Get the answer_id for "Available in select regions" dynamically
+    const availabilityQuestion = getQuestionById(Q.SOLUTION_AVAILABILITY)
+    const selectRegionsAnswer = availabilityQuestion?.question_answer_options.find((opt) =>
+      opt.answer_text.toLowerCase().includes('select regions'),
+    )
+
+    if (formData.value.step2[Q.SOLUTION_AVAILABILITY] === selectRegionsAnswer?.answer_id) {
       payload.questions.push({
-        question_id: 160,
+        question_id: Q.REGIONAL_APPLICATION,
         question_type_id: 2,
         answer_id: regions,
-        answer_text: regions.length > 0 ? getAnswerText(160, regions) : [],
+        answer_text: regions.length > 0 ? getAnswerText(Q.REGIONAL_APPLICATION, regions) : [],
       })
     }
 
-    // Q161: Specific countries (type 4 - text) - Only include if Q159 = 271
-    if (formData.value.step2[159] === 271) {
+    // Q: Specific countries (type 4 - text) - Only include if Q.SOLUTION_AVAILABILITY = 271 (or staging equivalent)
+    const specificCountriesAnswer = availabilityQuestion?.question_answer_options.find((opt) =>
+      opt.answer_text.toLowerCase().includes('specific countries'),
+    )
+
+    if (formData.value.step2[Q.SOLUTION_AVAILABILITY] === specificCountriesAnswer?.answer_id) {
       const countryNames =
-        formData.value.step2[161] && Array.isArray(formData.value.step2[161])
-          ? formData.value.step2[161].map((c: any) => c.name).join(', ')
+        formData.value.step2[Q.SPECIFIC_COUNTRIES] &&
+        Array.isArray(formData.value.step2[Q.SPECIFIC_COUNTRIES])
+          ? formData.value.step2[Q.SPECIFIC_COUNTRIES].map((c: any) => c.name).join(', ')
           : ''
       payload.questions.push({
-        question_id: 161,
+        question_id: Q.SPECIFIC_COUNTRIES,
         question_type_id: 4,
         answer_id: null,
         answer_text: countryNames,
       })
     }
 
-    // Step 3 questions (162-165) - all type 1 (radio)
-    for (let questionId = 162; questionId <= 165; questionId++) {
+    // Step 3 questions (all type 1 - radio)
+    const step3QuestionIds = [Q.ROI, Q.INTEGRATION, Q.DIFFERENTIATION, Q.MEASURABLE_VALUE]
+    step3QuestionIds.forEach((questionId) => {
       if (formData.value.step3[questionId]) {
         payload.questions.push({
           question_id: questionId,
@@ -224,24 +310,24 @@ export const useFormStore = defineStore('form', () => {
           answer_text: getAnswerText(questionId, formData.value.step3[questionId]),
         })
       }
-    }
-
-    // Q166: Video URL (type 4 - text)
-    // Include even if empty to maintain consistency
-    payload.questions.push({
-      question_id: 166,
-      question_type_id: 4,
-      answer_id: null,
-      answer_text: formData.value.step4[166] || '',
     })
 
-    // Q167: References/case studies (type 3 - dropdown/radio)
-    if (formData.value.step4[167]) {
+    // Q: Video URL (type 4 - text)
+    // Include even if empty to maintain consistency
+    payload.questions.push({
+      question_id: Q.VIDEO_URL,
+      question_type_id: 4,
+      answer_id: null,
+      answer_text: formData.value.step4[Q.VIDEO_URL] || '',
+    })
+
+    // Q: References/case studies (type 3 - dropdown/radio)
+    if (formData.value.step4[Q.REFERENCES]) {
       payload.questions.push({
-        question_id: 167,
+        question_id: Q.REFERENCES,
         question_type_id: 3,
-        answer_id: formData.value.step4[167],
-        answer_text: getAnswerText(167, formData.value.step4[167]),
+        answer_id: formData.value.step4[Q.REFERENCES],
+        answer_text: getAnswerText(Q.REFERENCES, formData.value.step4[Q.REFERENCES]),
       })
     }
 
@@ -326,6 +412,10 @@ export const useFormStore = defineStore('form', () => {
     questionsError,
     formData,
     userId,
+
+    // Environment-specific question IDs
+    Q,
+    environment,
 
     // Computed
     step2Questions,

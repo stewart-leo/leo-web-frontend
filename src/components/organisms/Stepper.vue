@@ -42,7 +42,7 @@
             <slot :name="`step-${step.value}`"></slot>
           </div>
 
-          <div class="step-navigation">
+          <div class="step-navigation" v-if="!isLastStepSubmitted(index)">
             <PvButton
               v-if="index > 0"
               label="Back"
@@ -64,7 +64,7 @@
               label="Submit"
               icon="pi pi-check"
               severity="success"
-              @click="$emit('submit')"
+              @click="handleSubmit"
             />
           </div>
         </div>
@@ -89,9 +89,13 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  step6Submitted: {
+    type: Boolean,
+    default: false,
+  },
 })
 
-defineEmits(['submit'])
+const emit = defineEmits(['submit'])
 
 const activeStep = ref(props.initialStep)
 
@@ -106,6 +110,15 @@ const progressWidth = computed(() => {
 
 const setActiveStep = (stepValue) => {
   activeStep.value = stepValue
+}
+
+// Check if the last step has been submitted
+const isLastStepSubmitted = (index) => {
+  return index === props.steps.length - 1 && props.step6Submitted
+}
+
+const handleSubmit = () => {
+  emit('submit')
 }
 
 const getStepIcon = (index) => {

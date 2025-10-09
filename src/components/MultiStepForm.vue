@@ -1,5 +1,5 @@
 <template>
-  <Stepper :steps="steps" @submit="submitForm">
+  <Stepper :steps="steps" :step6-submitted="isStep6Submitted" @submit="submitForm">
     <template #step-1>
       <Step1 />
     </template>
@@ -16,7 +16,7 @@
       <Step5 />
     </template>
     <template #step-6>
-      <Step6 ref="step6Ref" />
+      <Step6 ref="step6Ref" @update:is-submitted="handleSubmissionUpdate" />
     </template>
   </Stepper>
 </template>
@@ -32,6 +32,7 @@ import Step5 from '@/components/molecules/Step5.vue'
 import Step6 from '@/components/molecules/Step6.vue'
 
 const step6Ref = ref(null)
+const isStep6Submitted = ref(false)
 
 const steps = [
   {
@@ -66,10 +67,14 @@ const steps = [
   },
 ]
 
-async function submitForm() {
+function submitForm() {
   console.log('Form submission initiated from MultiStepForm')
   if (step6Ref.value) {
-    await step6Ref.value.handleSubmit()
+    step6Ref.value.handleSubmit()
   }
+}
+
+function handleSubmissionUpdate(value) {
+  isStep6Submitted.value = value
 }
 </script>

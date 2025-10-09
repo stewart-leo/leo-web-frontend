@@ -15,17 +15,17 @@
       </p>
       <div class="button-group">
         <PvButton
-          label="View Innovation"
+          label="View Application"
           icon="pi pi-external-link"
           @click="redirectToMyApplications"
           class="mt-4"
         />
-        <PvButton
+        <!-- <PvButton
           label="Submit Another Innovation"
           icon="pi pi-plus"
           @click="resetForm"
           class="mt-4"
-        />
+        /> -->
       </div>
     </div>
 
@@ -118,10 +118,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useFormStore } from '@/stores/formStore'
 
 const formStore = useFormStore()
+const emit = defineEmits(['update:isSubmitted'])
 
 // Form state
 const consentChecked = ref(false)
@@ -129,6 +130,11 @@ const sendCopyChecked = ref(false)
 const consentError = ref(false)
 const isSubmitted = ref(false)
 const submissionError = ref('')
+
+// Watch isSubmitted and emit changes
+watch(isSubmitted, (newValue) => {
+  emit('update:isSubmitted', newValue)
+})
 
 // Clear submission error
 const clearSubmissionError = () => {
@@ -205,11 +211,22 @@ const resetForm = () => {
 }
 
 const redirectToMyApplications = () => {
-  window.open('https://cbre.leadingedgeonly.com/dashboard/applications', '_blank')
+  const env = formStore.environment
+  const baseUrls = {
+    dev: 'https://dev.leadingedgeonly.com',
+    staging: 'https://staging.leadingedgeonly.com',
+    production: 'https://www.leadingedgeonly.com',
+  }
+
+  const baseUrl = baseUrls[env] || baseUrls.production
+  const fullUrl = `${baseUrl}/dashboard/applications`
+
+  window.open(fullUrl, '_blank')
 }
 
 defineExpose({
   handleSubmit,
+  isSubmitted,
 })
 </script>
 
