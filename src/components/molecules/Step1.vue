@@ -3,137 +3,117 @@
     <div class="form-container">
       <!-- Name Field -->
       <PvFloatLabel>
-        <PvInputText id="name" v-model="formValues.name" :invalid="!!errors.name" />
+        <PvInputText
+          id="name"
+          v-model="name"
+          :invalid="!!errors.name"
+          @blur="validateField('name')"
+        />
         <label for="name">Name</label>
       </PvFloatLabel>
-      <PvMessage v-if="errors.name" severity="error" size="small">
+      <small v-if="errors.name" class="error-text">
         {{ errors.name }}
-      </PvMessage>
+      </small>
 
       <!-- Company Name Field -->
       <PvFloatLabel>
         <PvInputText
           id="companyName"
-          v-model="formValues.companyName"
+          v-model="companyName"
           :invalid="!!errors.companyName"
+          @blur="validateField('companyName')"
         />
         <label for="companyName">Company Name</label>
       </PvFloatLabel>
-      <PvMessage v-if="errors.companyName" severity="error" size="small">
+      <small v-if="errors.companyName" class="error-text">
         {{ errors.companyName }}
-      </PvMessage>
+      </small>
 
       <!-- Country Field -->
       <PvFloatLabel>
         <PvSelect
           id="selectedCountry"
-          v-model="formValues.selectedCountry"
+          v-model="selectedCountry"
           :options="countries"
           optionLabel="name"
           filter
           :invalid="!!errors.selectedCountry"
+          @blur="validateField('selectedCountry')"
           class="w-full"
         />
-        <label for="country">Select a Country</label>
+        <label for="country">Country</label>
       </PvFloatLabel>
-      <PvMessage v-if="errors.selectedCountry" severity="error" size="small">
+      <small v-if="errors.selectedCountry" class="error-text">
         {{ errors.selectedCountry }}
-      </PvMessage>
+      </small>
     </div>
   </PvPanel>
 </template>
 
-<script setup>
-import { watch, reactive } from 'vue'
+<script setup lang="ts">
+import { watch } from 'vue'
+import { useForm, useField } from 'vee-validate'
+import { object, string } from 'yup'
 import { useFormStore } from '@/stores/formStore'
-import * as yup from 'yup'
 import countries from '@/assets/json/countries.json'
 
 const formStore = useFormStore()
 
-// Yup validation schema
-const schema = yup.object({
-  name: yup.string().required('Name is required').trim(),
-  companyName: yup.string().required('Company Name is required').trim(),
-  selectedCountry: yup
-    .object()
+// Define validation schema
+const validationSchema = object({
+  name: string().required('Name is required').trim(),
+  companyName: string().required('Company Name is required').trim(),
+  selectedCountry: object()
     .shape({
-      id: yup.number().required(),
-      name: yup.string().required(),
+      id: string().required(),
+      name: string().required(),
     })
     .nullable()
     .required('Country is required')
     .typeError('Country is required'),
 })
 
-// Form values
-const formValues = reactive({
-  name: formStore.formData.step1.name || '',
-  companyName: formStore.formData.step1.companyName || '',
-  selectedCountry: formStore.formData.step1.selectedCountry || null,
+// Initialize VeeValidate form
+const { errors, validate, validateField, setFieldValue } = useForm({
+  validationSchema,
+  initialValues: {
+    name: formStore.formData.step1.name || '',
+    companyName: formStore.formData.step1.companyName || '',
+    selectedCountry: formStore.formData.step1.selectedCountry || null,
+  },
 })
 
-// Error messages
-const errors = reactive({
-  name: '',
-  companyName: '',
-  selectedCountry: '',
-})
-
-// Validate all fields - called by Stepper before proceeding
-const validateAll = async () => {
-  try {
-    await schema.validate(formValues, { abortEarly: false })
-    // Clear all errors
-    errors.name = ''
-    errors.companyName = ''
-    errors.selectedCountry = ''
-    return true
-  } catch (err) {
-    // Set all errors
-    errors.name = ''
-    errors.companyName = ''
-    errors.selectedCountry = ''
-
-    err.inner.forEach((error) => {
-      errors[error.path] = error.message
-    })
-    return false
-  }
-}
-
-// Check if form is valid (for store)
-const checkValidity = async () => {
-  try {
-    await schema.validate(formValues, { abortEarly: false })
-    return true
-  } catch {
-    return false
-  }
-}
+// Create fields
+const { value: name } = useField<string>('name')
+const { value: companyName } = useField<string>('companyName')
+const { value: selectedCountry } = useField<any>('selectedCountry')
 
 // Watch for changes and update store
 watch(
-  formValues,
-  async (newValues) => {
-    // Update store with form values
+  [name, companyName, selectedCountry],
+  () => {
     formStore.updateStep1({
-      name: newValues.name,
-      companyName: newValues.companyName,
-      selectedCountry: newValues.selectedCountry,
+      name: name.value,
+      companyName: companyName.value,
+      selectedCountry: selectedCountry.value,
     })
-
-    // Update validation status silently (no error display)
-    const isValid = await checkValidity()
-    formStore.updateStep1Validation(isValid)
   },
   { deep: true },
 )
 
+// Validate all fields - called by Stepper before proceeding
+const validateAll = async () => {
+  const result = await validate()
+  return result.valid
+}
+
 // Expose validation methods for Stepper
 defineExpose({
   validateAll,
-  isValid: async () => await checkValidity(),
+  isValid: async () => {
+    const result = await validate()
+    return result.valid
+  },
 })
 </script>
 
@@ -154,17 +134,12 @@ defineExpose({
   width: 100%;
 }
 
-:deep(.p-message) {
-  margin-top: -1.5rem;
-  padding: 0.5rem 0.75rem;
-}
-
-:deep(.p-message .p-message-text) {
-  font-size: 0.875rem;
-}
-
-:deep(.p-message .p-message-icon) {
-  font-size: 0.875rem;
+.error-text {
+  display: block;
+  color: #dc2626;
+  font-size: 0.75rem;
+  margin-top: -2rem;
+  margin-left: 0.25rem;
 }
 
 /* Invalid field styling */

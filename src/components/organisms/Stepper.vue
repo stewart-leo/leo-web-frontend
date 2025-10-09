@@ -11,7 +11,7 @@
             completed: activeStepIndex > index,
             clickable: !linear || activeStepIndex >= index,
           }"
-          @click="(!linear || activeStepIndex >= index) && setActiveStep(step.value)"
+          @click="(!linear || activeStepIndex >= index) && handleStepClick(step.value)"
         >
           <div class="step-number">
             <i v-if="activeStepIndex > index" class="pi pi-check"></i>
@@ -48,7 +48,7 @@
               label="Back"
               severity="secondary"
               icon="pi pi-arrow-left"
-              @click="setActiveStep(steps[index - 1].value)"
+              @click="handleBack(step, index)"
             />
 
             <PvButton
@@ -56,7 +56,7 @@
               label="Next"
               icon="pi pi-arrow-right"
               iconPos="right"
-              @click="setActiveStep(steps[index + 1].value)"
+              @click="handleNext(step, index)"
             />
 
             <PvButton
@@ -73,8 +73,8 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue'
+<script setup lang="ts">
+import { ref, computed, getCurrentInstance } from 'vue'
 
 const props = defineProps({
   steps: {
@@ -98,9 +98,10 @@ const props = defineProps({
 const emit = defineEmits(['submit'])
 
 const activeStep = ref(props.initialStep)
+const instance = getCurrentInstance()
 
 const activeStepIndex = computed(() =>
-  props.steps.findIndex((step) => step.value === activeStep.value),
+  props.steps.findIndex((step: any) => step.value === activeStep.value),
 )
 
 const progressWidth = computed(() => {
@@ -108,12 +109,72 @@ const progressWidth = computed(() => {
   return `${((activeStepIndex.value + 1) / props.steps.length) * 100}%`
 })
 
-const setActiveStep = (stepValue) => {
+// Get step component ref
+const getStepComponentRef = (stepValue: string) => {
+  const slotName = `step-${stepValue}`
+  const parentComponent = instance?.parent
+
+  if (!parentComponent) return null
+
+  // Try to find the component in the parent's refs
+  const refs = parentComponent.refs
+  if (refs && refs[`${slotName}Ref`]) {
+    return refs[`${slotName}Ref`]
+  }
+
+  return null
+}
+
+// Handle Next button click
+const handleNext = async (step: any, index: number) => {
+  // Only validate Step 1
+  if (step.value === '1') {
+    const stepComponent = getStepComponentRef('1')
+
+    if (stepComponent && typeof stepComponent.validateAll === 'function') {
+      const isValid = await stepComponent.validateAll()
+
+      if (!isValid) {
+        console.log('Step 1 validation failed')
+        return
+      }
+    }
+  }
+
+  // Proceed to next step
+  setActiveStep(props.steps[index + 1].value)
+}
+
+// Handle Back button click
+const handleBack = (step: any, index: number) => {
+  setActiveStep(props.steps[index - 1].value)
+}
+
+// Handle step indicator click
+const handleStepClick = async (stepValue: string) => {
+  // If trying to go forward from Step 1, validate first
+  if (activeStep.value === '1' && parseInt(stepValue) > 1) {
+    const stepComponent = getStepComponentRef('1')
+
+    if (stepComponent && typeof stepComponent.validateAll === 'function') {
+      const isValid = await stepComponent.validateAll()
+
+      if (!isValid) {
+        console.log('Step 1 validation failed')
+        return
+      }
+    }
+  }
+
+  setActiveStep(stepValue)
+}
+
+const setActiveStep = (stepValue: string) => {
   activeStep.value = stepValue
 }
 
 // Check if the last step has been submitted
-const isLastStepSubmitted = (index) => {
+const isLastStepSubmitted = (index: number) => {
   return index === props.steps.length - 1 && props.step6Submitted
 }
 
@@ -121,7 +182,7 @@ const handleSubmit = () => {
   emit('submit')
 }
 
-const getStepIcon = (index) => {
+const getStepIcon = (index: number) => {
   const icons = [
     'pi pi-user',
     'pi pi-cog',

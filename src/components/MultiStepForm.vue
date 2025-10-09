@@ -1,7 +1,7 @@
 <template>
-  <Stepper :steps="steps" :step6-submitted="isStep6Submitted" @submit="submitForm">
+  <Stepper ref="stepperRef" :steps="steps" :step6-submitted="isStep6Submitted" @submit="submitForm">
     <template #step-1>
-      <Step1 />
+      <Step1 ref="step-1Ref" />
     </template>
     <template #step-2>
       <Step2 />
@@ -31,6 +31,7 @@ import Step4 from '@/components/molecules/Step4.vue'
 import Step5 from '@/components/molecules/Step5.vue'
 import Step6 from '@/components/molecules/Step6.vue'
 
+const stepperRef = ref(null)
 const step6Ref = ref(null)
 const isStep6Submitted = ref(false)
 
